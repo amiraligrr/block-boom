@@ -1,0 +1,61 @@
+# Block Boom API — shared host
+#
+# ── What this file can and cannot do on this host ──────────────────────────
+# The whitelist form of this rule —
+#
+#     <FilesMatch "!^\.php$"> Require all denied </FilesMatch>
+#
+# is the correct way to write it and it does NOT work here. Verified directly
+# on this host: with the negated pattern in place, README.md returned 200 while
+# a plain `<FilesMatch "\.md$">` returned 403 for the same file. The negation
+# prefix in <FilesMatch> is silently ignored, so a whitelist would look
+# correct, review clean, and protect nothing.
+#
+# So this is a blacklist, against the better judgement. The list below is wide
+# enough that the thing it has to catch in practice — a README, a .sql dump, an
+# editor swap file, a stray export — is covered, and the dotfile rule after it
+# covers the "anything starting with a dot" case as a category.
+#
+# ── Why it matters ─────────────────────────────────────────────────────────
+# README.md was publicly downloadable at https://blockboomapi.amiraligrr.ir/
+# for the entire life of this deployment, and it documents the score-ceiling
+# formula in enough detail to be worth reading before writing a bot.
+Options -Indexes
+
+<FilesMatch "\.(sql|zip|log|bak|old|orig|save|swp|md|markdown|txt|json|ya?ml|ini|env|csv|tsv|sql\.gz|tar|gz|bz2|xz|7z|rar|sh|py|js|css|map|html?|xml|pem|key|crt|p12|pfx|jks|keystore|db|sqlite.*|dmp|dump|htaccess\.bak)$">
+    Require all denied
+</FilesMatch>
+
+# Libraries that must stay unreachable even as .php. They are only ever
+# include()d and are never an entry point.
+<FilesMatch "^(config|db|anticheat|policy)\.php$">
+    Require all denied
+</FilesMatch>
+
+# Dotfiles (.env, .ftpquota, .git, …). A category rather than a list.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Editor/backup leftovers
+<FilesMatch "~$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^#.*#$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "no-referrer"
+    Header always set X-Robots-Tag "noindex, nofollow"
+    # Only ever JSON. A stray HTML error page would otherwise be sniffed as
+    # HTML by a browser that happens to hit the API directly.
+    Header always set Content-Type-Policy "default-src 'none'; frame-ancestors 'none'"
+
+    # NOTE: there is deliberately no `Header unset Access-Control-*` here.
+    # It looks like it should remove the wildcard, and it does not: mod_headers
+    # runs during response preparation while PHP's header() writes afterwards,
+    # so PHP's value wins. The wildcard is removed at the source instead — see
+    # bb_send_cors_headers() in db.php.
+</IfModule>

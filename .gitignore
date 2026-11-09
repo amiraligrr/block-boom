@@ -1,0 +1,106 @@
+# ─────────────────────────────────────────────────────────────────────────
+#  رازها — هرگز کامیت نشوند
+#
+#  admin/config.php و api/config.php شامل رمز دیتابیس، کلید ضدتقلب و کلید
+#  اعلان‌ها هستند. اگر یک روز `git add .` اجرا شود، بدون این خطوط کل پنل
+#  مدیریت لو می‌رود.
+#
+#  بهتر: این مقادیر را در متغیر محیطی هاست بگذار (BB_DB_PASS و ...) و
+#  از این فایل‌ها حذفشان کن. نمونه در .env.example هست.
+# ─────────────────────────────────────────────────────────────────────────
+admin/config.php
+api/config.php
+.env
+.env.*
+!.env.example
+
+# کلید امضای ضدتقلب — فقط باید روی سرور باشد، نه داخل اپلیکیشن
+*run_token*
+*RUN_TOKEN_SECRET*
+
+# کلید عمومی مایکت (عمومی است ولی برای مرتب بودن پروژه اینجاست)
+admin/config.local.php
+
+# gradle.properties نگه‌داری رمز امضای نسخهٔ release است
+# (BLOCKBOOM_STORE_PASSWORD / BLOCKBOOM_KEY_PASSWORD). نسخهٔ کامیت‌شدهٔ این
+# فایل داخل مخزن نبود، پس `git add .` کلید انتشار را لو می‌داد.
+gradle.properties
+
+# اسکریپت‌های استقرار و هر چیزی که ممکن است اطلاعات اتصال داشته باشد.
+# deploy.sh قبلاً رمز FTP را داخل خودش داشت؛ حالا از BB_FTP_PASS یا
+# ~/.config/blockboom/ftp.pass می‌خواند، ولی خود اسکریپت هم بیرون از گیت است.
+tools/deploy.sh
+*.sh
+*.pass
+*.env.local
+
+# خروجی فایل‌های محلی — این‌ها دیتابیس یا اسکیما را لو می‌دهند
+icone.jpg
+*.sql
+!api/init_db.sql
+!api/migrations/*.sql
+
+# فایل‌های محلی/محیطی که نباید در مخزن عمومی بیایند
+mon2.json
+ca.psiphon.PsiphonTunnel.tunnel-core/
+web/deploy/
+web/download/
+*.log
+*.pem
+*.key
+*.p12
+*.crt
+
+# خروجی‌های Next.js
+web-next/node_modules/
+web-next/.next/
+web-next/out/
+web-next/.vercel/
+web-next/public/download/
+web-next/.env*
+
+# ─────────────────────────────────────────────────────────────────────────
+#  Gradle & build
+# ─────────────────────────────────────────────────────────────────────────
+.gradle/
+build/
+app/build/
+local.properties
+*.hprof
+
+# Keystore — از گیت بیرون! (به یک جای امن پشتیبان بگیر)
+app/*.jks
+*.jks
+*.keystore
+
+# ─────────────────────────────────────────────────────────────────────────
+#  IDE
+# ─────────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ─────────────────────────────────────────────────────────────────────────
+#  خروجی‌ها
+# ─────────────────────────────────────────────────────────────────────────
+app/lint-baseline.xml
+*.apk
+*.aab
+adminout.zip
+api/out.zip
+*.zip
+
+# فایل‌های بکاپ و ویرایشی
+*.bak
+*.old
+*.orig
+*.save
+*.swp
+*~
+
+# Python cache
+__pycache__/
+*.pyc

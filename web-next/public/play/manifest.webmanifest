@@ -1,0 +1,49 @@
+{
+  "name": "Block Boom — بازی آنلاین",
+  "short_name": "Block Boom",
+  "description": "همون بازی بلاک بوم، حالا کاملاً تحت وب. بلاک‌ها را بشکن، کمبو بساز و باس بزن.",
+  "id": "/play/",
+  "start_url": "/play/",
+  "scope": "/play/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#04120d",
+  "theme_color": "#04120d",
+  "lang": "fa",
+  "dir": "rtl",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "شروع بازی",
+      "short_name": "بازی",
+      "url": "/play/",
+      "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "دانلود اندروید",
+      "short_name": "دانلود",
+      "url": "/download/BlockBoom-1.1.0.apk"
+    }
+  ]
+}

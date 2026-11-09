@@ -1,0 +1,304 @@
+<resources>
+    <string name="app_name">بلاک بوم</string>
+    <!--
+        No glyph in the string. The button draws a real vector icon beside the
+        label instead, so the typed "▶" that used to live here rendered as a
+        second, mismatched mark on a button that already had one — and it was
+        measured as part of the text, so it competed with the Persian label for
+        horizontal room.
+    -->
+    <string name="start_game">شروع بازی</string>
+    <string name="play">بازی</string>
+    <string name="shop">فروشگاه</string>
+    <string name="settings">تنظیمات</string>
+    <string name="coins">سکه</string>
+    <string name="level">مرحله</string>
+    <string name="score">امتیاز</string>
+    <string name="pause">توقف</string>
+    <string name="resume">ادامه</string>
+    <string name="home">خانه</string>
+    <string name="try_again">دوباره</string>
+    <string name="game_over">پایان بازی</string>
+    <string name="level_complete">مرحله کامل شد</string>
+    <string name="btn_continue">ادامه</string>
+    <string name="buy">خرید</string>
+    <string name="back">بازگشت</string>
+    <string name="remove_ads">حذف تبلیغات</string>
+    <string name="upgrade_damage">قدرت ضربه</string>
+    <string name="upgrade_fire_rate">نواخت شلیک</string>
+    <string name="upgrade_multi_ball">تیر چندگانه</string>
+    <string name="upgrade_pierce">نفوذ</string>
+    <string name="upgrade_magnet">آهنربای سکه</string>
+    <string name="upgrade_bullet_speed">سرعت گلوله</string>
+    <string name="upgrade_level">سطح</string>
+    <string name="upgrade_price">قیمت</string>
+    <string name="maxed">کامل شد</string>
+    <string name="upgrade_locked">از مرحلهٔ %1$d باز می‌شه</string>
+    <string name="not_enough_coins">سکه کافی نیست</string>
+    <string name="level_earned_coins">سکه این مرحله</string>
+    <string name="final_score">امتیاز نهایی</string>
+    <string name="next_effect">تاثیر بعدی</string>
+    <string name="hearts">قلب‌ها</string>
+    <string name="out_of_lives">قلب‌ات تموم شد!</string>
+    <string name="life_regen_hint">منتظر باش تا قلب جدید بیاید یا با دیدن تبلیغ، یک قلب بگیر.</string>
+    <string name="next_life_in">قلب بعدی در</string>
+    <string name="watch_ad_for_life">دریافت قلب رایگان (تماشای تبلیغ)</string>
+    <string name="watch_ad_for_lives">تماشای تبلیغ برای جان</string>
+    <string name="ad_not_ready">تبلیغ هنوز آماده نیست، کمی بعد دوباره تلاش کن</string>
+    <string name="close">بستن</string>
+    <string name="double_coins">دو برابر کردن سکه‌ها (تماشای تبلیغ)</string>
+    <string name="premium">پریمیوم</string>
+    <string name="premium_purchased">پریمیوم فعال شد</string>
+    <string name="buy_premium">خرید پریمیوم</string>
+    <string name="premium_perks">حذف تبلیغات + قلب بی‌نهایت</string>
+    <string name="coin_packs">بسته‌های سکه</string>
+    <string name="best_value">باصرفه‌ترین</string>
+    <string name="save_percent">%1$d٪ تخفیف</string>
+    <!-- "worth about N levels of play" — the number a coin pack actually means. -->
+    <string name="pack_worth_levels">معادل حدود %1$s مرحله بازی</string>
+    <string name="restore_purchases">بازیابی خریدهای قبلی</string>
+    <string name="rials">ریال</string>
+    <string name="toman">تومان</string>
+    <string name="shop_connecting">در حال اتصال به فروشگاه…</string>
+    <string name="billing_unavailable">سرویس پرداخت مایکت در دسترس نیست</string>
+    <string name="coins_plus">+%1$s سکه</string>
+    <string name="upgrade">ارتقا</string>
+    <string name="tap_to_start">برای شروع بزن!</string>
+
+    <!-- The in-game coach. One step at a time, in the order a new player asks
+         the questions. Keys are coach_step_<name>_title / _body. -->
+    <string name="coach_step_move_title">توپت رو بکش</string>
+    <string name="coach_step_move_body">انگشتت رو روی صفحه بکش. توپ پایین دنبال انگشتت میاد — لازم نیست رها کنی.</string>
+    <string name="coach_step_shoot_title">خودش شلیک می‌کنه</string>
+    <string name="coach_step_shoot_body">نیازی به نشونه‌گیری نیست. تو فقط جای توپ رو عوض کن، بقیه‌اش با خودشه.</string>
+    <string name="coach_step_break_title">حالا بلاک‌ها رو بشکن</string>
+    <string name="coach_step_break_body">هر چه عدد بزرگ‌تر باشه، ضرب بیشتری می‌خواد. توپ رو زیر اون بلاک ببر.</string>
+    <string name="coach_step_danger_title">مواظب باش، می‌میری!</string>
+    <string name="coach_step_danger_body">اگه یه بلاک به توپت برسه، یه قلب از دست میدی. اگه قلب تموم شه، بازی تمومه.</string>
+    <string name="coach_step_chain_title">کمبو بساز</string>
+    <string name="coach_step_chain_body">چند تا بلاک رو پشت سر هم بزنی، امتیازت چند برابر میشه.</string>
+
+    <!-- Stats screen -->
+    <string name="stats_title">آمار بازی</string>
+    <string name="stats_subtitle">همه‌ی کاری که تا حالا کردی</string>
+    <string name="stats_records">رکوردها</string>
+    <string name="stats_totals">مجموع</string>
+    <string name="stat_deepest_level">عمیق‌ترین مرحله</string>
+    <string name="stat_best_combo">بهترین کمبو</string>
+    <string name="stat_best_run">بهترین امتیاز یک اجرا</string>
+    <string name="stat_runs">تعداد اجرا</string>
+    <string name="stat_levels_cleared">مرحله‌های تمام‌شده</string>
+    <string name="stat_blocks">بلاک‌های شکسته</string>
+    <string name="stat_accuracy">دقت (بلاک بر شلیک)</string>
+    <string name="stat_coins_earned">سکه‌ی کسب‌شده</string>
+    <string name="stat_play_time">زمان بازی</string>
+    <string name="stat_total_score">مجموع امتیاز</string>
+    <string name="stats_empty">هنوز آماری ثبت نشده. یک مرحله بازی کن تا اینجا پر شه.</string>
+    <string name="my_level">مرحله %1$d</string>
+    <string name="onboarding_welcome_title">به بلاک بوم خوش آمدی!</string>
+    <string name="onboarding_welcome_desc">یک بازی ارکید کلاسیک با لمسه‌ی مدرن. بلاک‌ها رو بشکن، سکه جمع کن و در لیدربرد برق بزن!</string>
+    <string name="onboarding_start">شروع کنیم</string>
+    <string name="onboarding_name_title">نام تو چیست؟</string>
+    <string name="onboarding_name_desc">برای ثبت امتیاز در لیدربرد، یک نام انتخاب کن</string>
+    <string name="onboarding_name_hint">نام خود را وارد کنید</string>
+    <string name="onboarding_name_rules">۲ تا ۱۶ کاراکتر، فقط حروف و اعداد</string>
+    <string name="onboarding_skip">انصراف</string>
+    <string name="onboarding_continue">ادامه</string>
+    <string name="onboarding_theme_title">ظاهر بازی را انتخاب کن</string>
+    <string name="onboarding_theme_desc">تم روشن یا تیره را همین حالا انتخاب کن؛ بعداً از تنظیمات هم می‌تونی عوضش کنی.</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_light_desc">پس‌زمینهٔ روشن و متن تیره</string>
+    <string name="theme_dark">تیره</string>
+    <string name="theme_dark_desc">پس‌زمینهٔ تیره و متن روشن</string>
+    <string name="theme_auto">هماهنگ با گوشی</string>
+    <string name="theme_auto_desc">همراه با تنظیمات سیستم</string>
+    <string name="settings_appearance_title">🎨 ظاهر برنامه</string>
+    <string name="settings_appearance_desc">تم را مستقل از گوشی انتخاب کن؛ همین حالا اعمال می‌شود.</string>
+    <string name="onboarding_language_title">زبان برنامه</string>
+    <string name="onboarding_language_desc">این نسخه فقط به زبان فارسی است</string>
+    <string name="onboarding_finish">شروع بازی!</string>
+    <!--
+        The credit line, and the only piece of branding the app carries.
+
+        It used to read "made with love for Iranian gamers", which narrowed the
+        game to one market it was never built for. The replacement is a plain
+        signature with no border on it — and it is deliberately the *only* line
+        of its kind in the app: the version number, the "about" blurb and the
+        language row that used to sit around it are gone, because a settings
+        screen full of prose about the app is a screen nobody reads. The one
+        thing a player might actually want from it is who made it, and that is
+        the GitHub card directly above.
+    -->
+    <string name="made_with_love">Made by Amiraligrr for everyone, everywhere</string>
+    <string name="settings_github_title">سازنده</string>
+    <string name="settings_github_sub">گیت‌هاب رسمی — پروژه‌ها، گزارش مشکل و حمایت</string>
+    <string name="settings_open_github_browser">مرورگر برای باز کردن لینک پیدا نشد</string>
+    <string name="lives_out_of">%1$d/%2$d</string>
+    <string name="blocks_progress">%1$d / %2$d مانع</string>
+
+<string name="hearts_granted">قلب‌ها شارژ شد! هدیه: ۳ قلب</string>
+    <string name="ad_not_ready_retry">تبلیغ آماده نشد؛ روی دکمه دوباره بزن تا دوباره امتحان کنه</string>
+    <string name="select_skin">انتخاب</string>
+    <string name="selected">انتخاب شد</string>
+    <string name="next_boss_in">تا رئیس بعدی</string>
+    <string name="levels">مرحله</string>
+    <!--
+        Short by design. This sits under "next boss in" with maxLines = 1 next
+        to the level number, and the sentence that used to live here was longer
+        than one line — so it was clipped mid-word and read as broken text
+        running into the number beside it.
+    -->
+    <string name="boss_hint">سکهٔ دوبرابر در باس‌فیت</string>
+    <string name="next_level_boss">مرحلهٔ بعد باس‌فیت</string>
+    <string name="daily_reward_title">هدیه روزانه!</string>
+    <string name="daily_reward_desc">هر روز بیای تا جایزه بگیری</string>
+    <string name="claim_now">دریافت کن</string>
+
+    <!-- Settings -->
+    <string name="music">موسیقی</string>
+    <string name="sound">صدا</string>
+    <string name="vibration">لرزش</string>
+    <string name="language">زبان</string>
+    <string name="theme">تم برنامه</string>
+    <string name="settings_subtitle">شخصی‌سازی تجربه بازی</string>
+    <string name="about">درباره بلاک بوم</string>
+
+    <!-- Support -->
+    <string name="support_title">پشتیبانی</string>
+    <string name="support_subtitle">سوال داری؟ اینجا جوابش رو پیدا کن</string>
+    <string name="support_q1">قلب‌هایم تموم شد، چی می‌شه؟</string>
+    <string name="support_a1">چند دقیقه صبر کن تا قلب‌ها خودشون پر بشن. اگه نمی‌خوای صبر کنی، می‌تونی با سکه‌ها پریمیوم بگیری که قلب نامحدود داره.</string>
+    <string name="support_q2">سکه‌ها از کجا بگیرم؟</string>
+    <string name="support_a2">هر بلاک که می‌شکنی سکه می‌ریزه. بلاک‌های شانسی با عدد طلایی سکه‌های بیشتری میدن و مراحل رئیس جایزهٔ بزرگ‌تری دارن.</string>
+    <string name="support_q3">رئیس چقدر سخته؟</string>
+    <string name="support_a3">رئیس هر ۱۰ مرحله میاد و با هر بار خوردن به زمین، بچه‌های کوچیک می‌سازه. توپخانه‌ات رو قوی کن و زودش شکستش بده.</string>
+    <string name="support_q4">بازی کنده یا هنگ می‌کنه</string>
+    <string name="support_a4">مطمئن شو آخرین نسخه رو نصب کردی. اگه مشکل پیش اومد، گوشی رو ری‌استارت کن و اگه بود، برامون ایمیل بزن.</string>
+    <string name="support_contact">تماس با سازنده</string>
+    <string name="support_contact_body">مشکلی پیش اومد یا پیشنهادی داری؟ برامون ایمیل بزن، جواب می‌دیم.</string>
+    <string name="support_email">ایمیل</string>
+    <string name="support_email_sent">اپلیکیشن ایمیل باز نشد؛ آدرس رو کپی کن</string>
+    <!-- Ticket chat -->
+    <string name="support_new_ticket">تیکت جدید</string>
+    <string name="support_faq_title">سوال‌های پرتکرار</string>
+    <string name="support_subject">موضوع</string>
+    <string name="support_subject_hint">مثلاً: خریدم ثبت نشد</string>
+    <string name="support_category">دسته‌بندی</string>
+    <string name="support_message">متن پیام</string>
+    <string name="support_message_hint">مشکلت رو کامل توضیح بده…</string>
+    <string name="support_send">ارسال تیکت</string>
+    <string name="support_reply_hint">پیامت رو بنویس…</string>
+    <string name="support_closed">این گفتگو بسته شده است</string>
+    <string name="support_admin">پشتیبانی</string>
+    <string name="retry">تلاش دوباره</string>
+    <string name="retry_one_more">این بار با دقت بیشتر</string>
+
+    <!-- Invite friends -->
+    <string name="share_result">اشتراک‌گذاری نتیجه</string>
+    <string name="share_choose">اشتراک‌گذاری با</string>
+    <string name="invite_title">دعوت از دوستان</string>
+    <string name="invite_your_code">کد تو</string>
+    <string name="invite_your_code_body">این کد رو به دوستات بده. هر کدی که دوستات وارد کنن، به تو هم سکه می‌رسه.</string>
+    <string name="invite_tap_to_copy">برای کپی روی کد بزن</string>
+    <string name="invite_copy">کپی کد</string>
+    <string name="invite_reward_note">هر دوست = سکه برای هر دو نفر</string>
+    <string name="invite_used_today">امروز استفاده شده</string>
+    <string name="invite_pending">در انتظار تأیید</string>
+    <string name="invite_have_code">کد داری؟</string>
+    <string name="invite_have_code_body">کد دوستت رو اینجا وارد کن تا سکه‌ات اضافه شه.</string>
+    <string name="invite_redeem">دریافت سکه</string>
+    <string name="invite_already_used">این کد قبلاً استفاده شده</string>
+    <string name="invite_bad_code">کد درست نیست — ۸ حرف و عدد</string>
+    <string name="invite_rejected">کد پذیرفته نشد</string>
+    <string name="invite_offline_title">اتصال برقرار نشد</string>
+    <string name="invite_offline_body">برای گرفتن کد به اینترنت وصل باش.</string>
+
+    <!-- Upgrade effects -->
+    <string name="upgrade_current">اکنون: %1$s</string>
+    <string name="upgrade_next">بعدی: %1$s</string>
+    <string name="effect_damage">ضربه %1$s</string>
+    <string name="effect_fire_rate">%1$s شلیک در ثانیه</string>
+    <string name="effect_multi_ball">%1$s توپ</string>
+    <string name="effect_pierce">نفوذ از %1$s مانع</string>
+    <string name="effect_magnet">شعاع جذب %1$s</string>
+    <string name="effect_bullet_speed">سرعت %1$s</string>
+    <string name="effect_max">حداکثر</string>
+
+    <!-- Shop tabs & skins -->
+    <string name="skins_tab">🎨 اسکین‌ها</string>
+    <string name="premium_tab">★ پریمیوم</string>
+    <string name="skins_balls">🎯 توپ‌ها</string>
+    <string name="skins_cannons">🔫 توپخانه‌ها</string>
+    <string name="skins_backgrounds">🌌 پس‌زمینه‌ها</string>
+    <string name="premium_perk_no_ads">حذف تمام تبلیغات</string>
+    <string name="premium_perk_hearts">قلب‌های نامحدود</string>
+    <string name="premium_perk_skins">اسکین‌های اختصاصی پریمیوم</string>
+    <string name="premium_perk_support">پشتیبانی از توسعه‌دهنده</string>
+    <string name="premium_perk_discount">٪۴۰ تخفیف روی همهٔ ارتقاها</string>
+    <string name="premium_perk_double_coins">سکهٔ دوبرابر در هر بازی</string>
+
+    <!-- Home upsell: shown to non-premium players, pinned for new ones. -->
+    <string name="home_premium_title">با پریمیوم ۳ برابر سریع‌تر پیشرفت کن</string>
+    <string name="home_premium_body">بدون تبلیغ، سکهٔ دوبرابر و ٪۴۰ تخفیف روی همهٔ ارتقاها</string>
+    <string name="home_premium_cta">فعال کردن پریمیوم</string>
+    <string name="home_premium_new_badge">جدید</string>
+    <string name="upgrade_price_discount">%1$s (پریمیوم)</string>
+    <string name="reward_delivered">+%1$d سکه اضافه شد 🪙</string>
+    <string name="balance_refund">تعادل بازی به‌روزرسانی شد؛ %1$d سکه بابت ارتقاهای تغییرکرده به حسابت برگشت 🪙</string>
+
+    <!-- Achievements -->
+    <string name="ach_first_run_title">اولین اجرا</string>
+    <string name="ach_first_run_desc">اولین بازی‌ات رو تمام کردی</string>
+    <string name="ach_combo_10_title">کمبوی ۱۰</string>
+    <string name="ach_combo_10_desc">ده تا بلاک رو پشت سر هم شکستی</string>
+    <string name="ach_combo_25_title">کمبوی ۲۵</string>
+    <string name="ach_combo_25_desc">بیست‌وپنج تا بلاک رو بدون توقف زدی</string>
+    <string name="ach_level_10_title">مرحله ۱۰</string>
+    <string name="ach_level_10_desc">مرحله ۱۰ رو رد کردی</string>
+    <string name="ach_level_50_title">مرحله ۵۰</string>
+    <string name="ach_level_50_desc">نصف راه رو رد کردی</string>
+    <string name="ach_level_100_title">مرحله ۱۰۰</string>
+    <string name="ach_level_100_desc">صد مرحله — اینجا دیگه حرفه‌ای شدی</string>
+    <string name="ach_run_5k_title">ستاره بازی</string>
+    <string name="ach_run_5k_desc">توی یک اجرا ۵۰۰۰ امتیاز گرفتی</string>
+    <string name="ach_blocks_1k_title">هزار بلاک</string>
+    <string name="ach_blocks_1k_desc">در مجموع ۱۰۰۰ بلاک شکستی</string>
+    <string name="ach_blocks_25k_title">بیست‌وپنج هزار</string>
+    <string name="ach_blocks_25k_desc">در مجموع ۲۵٬۰۰۰ بلاک شکستی</string>
+    <string name="ach_blocks_100k_title">صد هزار بلاک</string>
+    <string name="ach_blocks_100k_desc">در مجموع ۱۰۰٬۰۰۰ بلاک شکستی</string>
+    <string name="ach_runs_50_title">پنجاه بار</string>
+    <string name="ach_runs_50_desc">پنجاه بار بازی کردی</string>
+    <string name="ach_levels_500_title">پانصد مرحله</string>
+    <string name="ach_levels_500_desc">در مجموع ۵۰۰ مرحله رو تموم کردی</string>
+    <string name="ach_combo_lifetime_title">کمبوی مادام‌العمر</string>
+    <string name="ach_combo_lifetime_desc">بهترین کمبوی کل بازیت ۵۰ شد</string>
+    <string name="ach_coins_50k_title">پس‌انداز</string>
+    <string name="ach_coins_50k_desc">در مجموع ۵۰٬۰۰۰ سکه از بازی درآوردی</string>
+    <string name="ach_unlocked">دستاورد جدید: %1$s (+%2$s سکه)</string>
+    <string name="ach_progress">دستاوردها (%1$d از %2$d)</string>
+    <string name="ach_unlocked_short">+%1$s سکه</string>
+    <!-- One-time rescue offer after a block hit -->
+    <string name="revive_title">یه شانس دیگه داری</string>
+    <string name="revive_body">با تماشای تبلیغ، همین مرحله رو نگه می‌داری، قلبت خرج نمی‌شه، بلاک‌های پایین صفحه پاک می‌شن و یه سپر هم می‌گیری. توی باس فایت فقط سپر می‌گیری.</string>
+    <string name="revive_watch">تماشای تبلیغ</string>
+    <string name="revive_watching">در حال باز کردن تبلیغ…</string>
+    <string name="revive_loading">تبلیغ آماده نیست، کمی بعد دوباره امتحان کن</string>
+    <string name="revive_decline">بی‌خیال، برم ادامه بدم</string>
+    <!-- Daily reminder notification -->
+    <!--
+        Daily notification.
+
+        The only reason this app asks for POST_NOTIFICATIONS. With the daily
+        challenge gone, the reminder's job is the one thing that is true for every
+        player regardless of how long they have been away: there is a leaderboard,
+        it moves every day, and their name is on it somewhere.
+    -->
+    <string name="reminder_title">برد امروز منتظرته</string>
+    <string name="reminder_title_streak">%1$d روز پیاپی — نگهش دار!</string>
+    <string name="reminder_body">لیدربرد هر روز عوض می‌شه. برو بالا — جای تو هم اون بالاست.</string>
+    <string name="reminder_body_reward">لیدربرد هر روز عوض می‌شه و %1$d سکهٔ ورود روزانه‌ات هم آماده‌ست.</string>
+    <string name="reminder_channel_desc">یادآوری روزانهٔ لیدربرد</string>
+    <string name="notifications">یادآوری روزانه</string>
+    <string name="notifications_desc">وقتی پاداش روزانه و چالش امروز آماده شد خبرت کنم</string>
+</resources>
