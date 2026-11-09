@@ -103,3 +103,4 @@ cd web-next && npm run build
 
 The API check is read-only against production except for throwaway smoke-test
 accounts, which it deletes afterwards.
+**made by Amiraligrr , for everyone , everywhere**
