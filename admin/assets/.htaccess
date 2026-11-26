@@ -1,0 +1,34 @@
+# Admin static assets (CSS/JS).
+#
+# The root .htaccess denies .css and .js as a class, and on this host a plain
+# directory-level "Require all granted" does not override a matching
+# <FilesMatch> in the parent. The public /assets directory solved the same
+# problem by explicitly matching everything below it; do the same here.
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+</IfModule>
+
+<FilesMatch ".*">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=3600"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>

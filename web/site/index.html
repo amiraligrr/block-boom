@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04120d">
+<title>بلاک بوم ۱.۲ — بازی ارکید آنلاین و اندروید</title>
+<meta name="description" content="بلاک بوم: یک بازی ارکید سریع و سرگرم‌کننده. بلاک‌ها را بشکن، کمبو بساز و باس بزن. همین حالا آنلاین بازی کن یا نسخه اندروید ۱.۲ را دانلود کن.">
+<meta property="og:title" content="بلاک بوم ۱.۲ — بترکون، بالا برو، رکورد بزن">
+<meta property="og:description" content="همون بازی اندروید، حالا کاملاً تحت وب. نسخه PWA آفلاین + دانلود مستقیم APK.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://blockboomapi.amiraligrr.ir/">
+<meta property="og:image" content="https://blockboomapi.amiraligrr.ir/assets/icons/icon-512.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://blockboomapi.amiraligrr.ir/">
+<link rel="icon" href="/assets/icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/vazirmatn_regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="/assets/fonts/vazirmatn_black.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/site/landing.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Block Boom",
+  "alternateName": "بلاک بوم",
+  "url": "https://blockboomapi.amiraligrr.ir/",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Android 7+, Web",
+  "softwareVersion": "1.2.0",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "IRR"},
+  "description": "بازی ارکید بلاک‌شکن با باس‌فایت، ارتقا و لیدربورد."
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">پرش به محتوا</a>
+
+<canvas id="hero-canvas" aria-hidden="true"></canvas>
+<div class="ambient" aria-hidden="true">
+  <span class="orb orb-a"></span>
+  <span class="orb orb-b"></span>
+  <span class="orb orb-c"></span>
+  <span class="grid-plane"></span>
+</div>
+
+<header class="site-nav" id="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="بلاک بوم">
+      <span class="brand-mark"><img src="/assets/icons/icon-192.png" alt="" width="44" height="44"></span>
+      <span class="brand-text"><strong data-en="Block Boom">بلاک بوم</strong><small>BLOCK BOOM</small></span>
+    </a>
+
+    <nav class="nav-links" id="nav-links" aria-label="منوی اصلی">
+      <a href="#features" data-en="Features">امکانات</a>
+      <a href="#how" data-en="How to play">نحوه بازی</a>
+      <a href="#leaderboard" data-en="Leaderboard">لیدربورد</a>
+      <a href="#download" data-en="Download">دانلود</a>
+      <a href="#faq" data-en="FAQ">سوال‌ها</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="lang-toggle" type="button" aria-label="تغییر زبان" title="English">
+        <span class="lang-fa">EN</span><span class="lang-en">FA</span>
+      </button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="تغییر تم" title="روشن / تیره">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a class="btn btn-primary btn-sm nav-play" href="/play/">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/></svg>
+        <span data-en="Play now">بازی کن</span>
+      </a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="منو" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ── HERO ─────────────────────────────────────────────────────────── -->
+  <section class="hero" id="top">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <div class="eyebrow reveal">
+          <span class="live-dot"></span>
+          <span data-en="Version 1.2 — rebuilt with Tapsell">نسخه ۱.۲ — بازسازی با تپسل</span>
+          <span class="eyebrow-chip" data-en="NEW">جدید</span>
+        </div>
+
+        <h1 class="reveal">
+          <span class="line" data-en="Break the blocks.">بلاک‌ها رو بترکون،</span>
+          <span class="line gradient-text" data-en="Break the record.">رکورد رو بشکن.</span>
+        </h1>
+
+        <p class="lede reveal" data-en="A fast, fun arcade game: drag the cannon, shatter numbered blocks, chain combos, fight the Mother every 10 levels. Play right here in your browser — or download the Android build.">
+          یک بازی ارکیدِ سریع و سرگرم‌کننده: توپ رو بکش، بلاک‌های عددی رو منفجر کن، کمبو بساز و هر ۱۰ مرحله با «بلاک مادر» بجنگ. همین‌جا توی مرورگر بازی کن یا نسخه اندروید رو دانلود کن.
+        </p>
+
+        <div class="cta-row reveal">
+          <a class="btn btn-primary btn-lg" href="/play/">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/></svg>
+            <span data-en="Play in browser">همین حالا بازی کن</span>
+          </a>
+          <a class="btn btn-ghost btn-lg" href="/download/BlockBoom-1.2.0.apk" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <span data-en="Download Android">دانلود اندروید</span>
+            <span class="btn-tag">APK · ۱۱MB</span>
+          </a>
+        </div>
+
+        <div class="hero-meta reveal">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Android 7+">اندروید ۷+</span></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Version 1.2.0">نسخه ۱.۲.۰</span></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Offline PWA">PWA آفلاین</span></span>
+        </div>
+
+        <div class="hero-proof reveal">
+          <div class="avatar-stack" aria-hidden="true"><span>ا</span><span>م</span><span>آ</span><span>+</span></div>
+          <div>
+            <strong id="hero-players">۵ بازیکن</strong>
+            <small data-en="already on the leaderboard">همین حالا توی لیدربورد</small>
+          </div>
+          <div class="mini-rating" aria-label="امتیاز ۴.۸ از ۵">
+            <span>★★★★★</span><small>۴.۸</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal">
+        <div class="phone-glow" aria-hidden="true"></div>
+        <div class="float-chip chip-1" aria-hidden="true"><span>۶۴</span></div>
+        <div class="float-chip chip-2" aria-hidden="true"><span>۳۲</span></div>
+        <div class="float-chip chip-3" aria-hidden="true"><span>۱۶</span></div>
+        <div class="float-chip chip-4 gold" aria-hidden="true">🍀</div>
+        <div class="phone">
+          <div class="phone-bezel">
+            <div class="phone-screen">
+              <canvas id="demo-canvas" width="320" height="640" aria-label="دموی زنده بازی بلاک بوم"></canvas>
+              <div class="demo-hud" aria-hidden="true">
+                <div class="demo-top">
+                  <span class="demo-hearts" id="demo-hearts">❤️ ۲۵</span>
+                  <span class="demo-level" id="demo-level">مرحله ۷</span>
+                  <span class="demo-score" id="demo-score">۰</span>
+                </div>
+                <div class="demo-progress"><i></i></div>
+                <div class="demo-combo">کمبو ×۳</div>
+              </div>
+              <div class="demo-label"><span class="live-dot"></span><span data-en="Live gameplay preview">دموی زنده بازی</span></div>
+            </div>
+          </div>
+          <span class="phone-side side-l" aria-hidden="true"></span>
+          <span class="phone-side side-r" aria-hidden="true"></span>
+        </div>
+        <div class="floating-badge badge-a"><strong>+۲٬۴۰۰</strong><small data-en="combo score">امتیاز کمبو</small></div>
+        <div class="floating-badge badge-b"><span>☠️</span><small data-en="Boss every 10 levels">باس هر ۱۰ مرحله</small></div>
+      </div>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true"><span></span></div>
+  </section>
+
+  <!-- ── MARQUEE ──────────────────────────────────────────────────────── -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>بلاک بشکن</span><i>✦</i><span>کمبو بساز</span><i>✦</i><span>باس بزن</span><i>✦</i><span>ارتقا بخر</span><i>✦</i><span>رکورد بشکن</span><i>✦</i><span>بلاک بشکن</span><i>✦</i><span>کمبو بساز</span><i>✦</i><span>باس بزن</span><i>✦</i><span>ارتقا بخر</span><i>✦</i><span>رکورد بشکن</span><i>✦</i>
+    </div>
+  </div>
+
+  <!-- ── STATS ────────────────────────────────────────────────────────── -->
+  <section class="stats-band container" aria-label="آمار بازی">
+    <div class="stat reveal"><strong id="stat-best">۱۴۵۱</strong><span data-en="Top score">بیشترین امتیاز</span></div>
+    <div class="stat reveal"><strong id="stat-players">۵</strong><span data-en="Players">بازیکن</span></div>
+    <div class="stat reveal"><strong>۷۲</strong><span data-en="Blocks per level">بلاک در هر مرحله</span></div>
+    <div class="stat reveal"><strong>∞</strong><span data-en="Endless levels">مرحله بی‌پایان</span></div>
+  </section>
+
+  <!-- ── FEATURES ─────────────────────────────────────────────────────── -->
+  <section class="section" id="features">
+    <div class="container">
+      <header class="section-head reveal">
+        <span class="kicker" data-en="THE CORE LOOP">حلقه اصلی بازی</span>
+        <h2 data-en="Every stage is a fresh challenge.">هر مرحله، یک چالش تازه.</h2>
+        <p data-en="The loop is easy to learn and satisfying to master: aim, shatter, chain, upgrade, repeat.">حلقه بازی ساده‌ست و تسلط روش لذت‌بخش: نشانه بگیر، بشکن، زنجیره بساز، ارتقا بده، دوباره.</p>
+      </header>
+
+      <div class="feature-grid">
+        <article class="feature-card reveal">
+          <span class="feature-icon i-green">🧱</span>
+          <h3 data-en="72 blocks. One stage.">۷۲ بلاک. یک مرحله.</h3>
+          <p data-en="A short, readable fight. Numbered blocks, armour plating, ice and lucky chance blocks keep the board changing.">یک نبرد کوتاه و خوانا؛ بلاک‌های عددی، زره‌دار، یخی و بلاک‌های شانسی، هر مرحله رو متفاوت می‌کنن.</p>
+          <span class="feature-glow"></span>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon i-pink">☠️</span>
+          <h3 data-en="Boss every 10 levels">باس هر ۱۰ مرحله</h3>
+          <p data-en="The MOTHER lands, throws satellites, and comes back for more. Her health scales with your cannon, so it is always a fight.">«بلاک مادر» می‌رسه، بچه می‌سازه و برمی‌گرده. جانش با توپ تو تنظیم می‌شه، پس همیشه یه مبارزه واقعیه.</p>
+          <span class="feature-glow"></span>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon i-gold">⚡</span>
+          <h3 data-en="6 permanent upgrades">۶ ارتقای دائمی</h3>
+          <p data-en="Damage, fire rate, multiball, pierce, magnet and bullet speed. Every coin buys a visible difference.">قدرت ضربه، نواخت شلیک، تیر چندگانه، نفوذ، آهنربا و سرعت گلوله. هر سکه یه تفاوت واقعی می‌خره.</p>
+          <span class="feature-glow"></span>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon i-cyan">❄️</span>
+          <h3 data-en="Power-ups that change the board">پاورآپ‌هایی که بازی رو عوض می‌کنن</h3>
+          <p data-en="Freeze, double damage, rapid fire, coin rush, ghost, shield and nuke. Catch them before they expire.">فریز، دابل دمیج، رپید فایر، کوین راش، گوست، سپر و نیوک. قبل از تموم‌شدنشون بگیرشون.</p>
+          <span class="feature-glow"></span>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon i-purple">🔥</span>
+          <h3 data-en="Combos and multipliers">کمبو و ضریب امتیاز</h3>
+          <p data-en="Kill fast, chain kills, and watch the multiplier climb. The best runs are built, not lucky.">سریع بکش، زنجیره بساز و ضریب رو بالا ببر. بهترین اجراها ساخته می‌شن، نه شانسی.</p>
+          <span class="feature-glow"></span>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon i-blue">📴</span>
+          <h3 data-en="Online. Offline. Yours.">آنلاین. آفلاین. مال خودت.</h3>
+          <p data-en="The web build is a full PWA: install it on your home screen and keep playing without a connection.">نسخه وب یک PWA کامله: روی صفحه اصلی نصبش کن و بدون اینترنت هم بازی کن.</p>
+          <span class="feature-glow"></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW TO PLAY ──────────────────────────────────────────────────── -->
+  <section class="section how-section" id="how">
+    <div class="container">
+      <header class="section-head reveal">
+        <span class="kicker" data-en="ONE THUMB. ZERO LEARNING CURVE.">یک انگشت. صفر یادگیری.</span>
+        <h2 data-en="Three seconds to learn. Weeks to master.">سه ثانیه یاد می‌گیری. هفته‌ها طول می‌کشه تا استاد شی.</h2>
+      </header>
+      <div class="how-grid">
+        <article class="how-card reveal">
+          <div class="how-visual">
+            <div class="drag-track"><span class="drag-finger">☝️</span><span class="drag-cannon"></span></div>
+            <span class="step-num">۱</span>
+          </div>
+          <h3 data-en="Drag the cannon">توپ رو بکش</h3>
+          <p data-en="Move your finger across the screen. The cannon follows and fires automatically — no aim button.">انگشتت رو روی صفحه بکش. توپ دنبالش میاد و خودش شلیک می‌کنه — دکمه شلیک لازم نیست.</p>
+        </article>
+        <article class="how-card reveal">
+          <div class="how-visual">
+            <div class="blocks-demo"><span style="--c:#ff3b30">۳۲</span><span style="--c:#00c2ff">۶۴</span><span style="--c:#ffb300">۱۶</span></div>
+            <span class="step-num">۲</span>
+          </div>
+          <h3 data-en="Shatter the blocks">بلاک‌ها رو بشکن</h3>
+          <p data-en="The number on a block is its health. Bigger number, more hits. Break it before it reaches you.">عدد روی هر بلاک جانشه. عدد بزرگ‌تر، ضرب بیشتر. قبل از رسیدنش به توپ، خردش کن.</p>
+        </article>
+        <article class="how-card reveal">
+          <div class="how-visual">
+            <div class="hearts-demo"><span>❤️</span><span>❤️</span><span>❤️</span><span class="dim">❤️</span><span class="dim">❤️</span></div>
+            <span class="step-num">۳</span>
+          </div>
+          <h3 data-en="Stay alive">زنده بمون</h3>
+          <p data-en="A block touching the cannon costs a heart and replays the stage. You start with 25 hearts — use them wisely.">اگه بلاکی به توپ برسه، یک قلب می‌دی و همون مرحله دوباره شروع می‌شه. با ۲۵ قلب شروع می‌کنی — عاقلانه خرجشون کن.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TWO WAYS TO PLAY ─────────────────────────────────────────────── -->
+  <section class="section" id="ways">
+    <div class="container">
+      <header class="section-head reveal">
+        <span class="kicker" data-en="SAME GAME. TWO HOMES.">همون بازی. دو خونه.</span>
+        <h2 data-en="Install it, or open it. Your call.">نصبش کن، یا همون‌جا بازش کن. انتخاب با توئه.</h2>
+      </header>
+      <div class="ways-grid">
+        <article class="way-card reveal">
+          <div class="way-top">
+            <span class="way-icon android">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 9.5 19.2 6a.6.6 0 0 0-1-.6l-1.7 3.5A10.4 10.4 0 0 0 12 8.2c-1.6 0-3.1.2-4.5.7L5.8 5.4a.6.6 0 1 0-1 .6l1.6 3.5C3.5 11.1 2 13.9 2 17h20c0-3.1-1.5-5.9-4.4-7.5zM7 14.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm10 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+            </span>
+            <div><h3 data-en="Android APK">نسخه اندروید (APK)</h3><p data-en="The original build — leaderboard, daily missions, shop and saved progress.">نسخه اصلی — لیدربورد، ماموریت روزانه، فروشگاه و ذخیره پیشرفت.</p></div>
+          </div>
+          <ul class="way-list">
+            <li data-en="Direct download, version 1.2.0 (code 24)">دانلود مستقیم، نسخه ۱.۲.۰ (کد ۲۴)</li>
+            <li data-en="Works on Android 7 and newer">روی اندروید ۷ به بالا اجرا می‌شه</li>
+            <li data-en="13 MB — no store needed">۱۳ مگابایت — بدون نیاز به استور</li>
+          </ul>
+          <a class="btn btn-primary btn-block" href="/download/BlockBoom-1.2.0.apk" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <span data-en="Download APK">دانلود APK</span>
+          </a>
+        </article>
+
+        <article class="way-card featured reveal">
+          <span class="way-ribbon" data-en="NO INSTALL NEEDED">بدون نصب</span>
+          <div class="way-top">
+            <span class="way-icon web">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+            </span>
+            <div><h3 data-en="Web / PWA">نسخه وب / PWA</h3><p data-en="The full game loop, running in your browser. Install it for offline play.">همون حلقه کامل بازی، داخل مرورگر. برای بازی آفلاین نصبش کن.</p></div>
+          </div>
+          <ul class="way-list">
+            <li data-en="Play instantly — no download">همین حالا بازی کن — بدون دانلود</li>
+            <li data-en="Install to home screen (PWA)">نصب روی صفحه اصلی (PWA)</li>
+            <li data-en="Offline after the first load">بعد از اولین بار، آفلاین هم کار می‌کنه</li>
+          </ul>
+          <a class="btn btn-gold btn-block" href="/play/">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/></svg>
+            <span data-en="Play in browser">توی مرورگر بازی کن</span>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LEADERBOARD ──────────────────────────────────────────────────── -->
+  <section class="section leaderboard-section" id="leaderboard">
+    <div class="container">
+      <header class="section-head split reveal">
+        <div>
+          <span class="kicker" data-en="LIVE LEADERBOARD">لیدربورد زنده</span>
+          <h2 data-en="Think you can take the top spot?">فکر می‌کنی می‌تونی صدر جدول رو بگیری؟</h2>
+        </div>
+        <div class="refresh-pill"><span class="live-dot"></span><span data-en="Refreshes every 30s">هر ۳۰ ثانیه به‌روز می‌شه</span></div>
+      </header>
+
+      <div class="leaderboard-card reveal">
+        <div class="board-head">
+          <span data-en="Rank">رتبه</span>
+          <span data-en="Player">بازیکن</span>
+          <span data-en="Level">مرحله</span>
+          <span data-en="Score">امتیاز</span>
+        </div>
+        <div id="leaderboard-rows" class="board-rows" aria-live="polite">
+          <div class="board-skeleton"><span></span><span></span><span></span><span></span></div>
+          <div class="board-skeleton"><span></span><span></span><span></span><span></span></div>
+          <div class="board-skeleton"><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div class="board-foot">
+          <span id="board-status" data-en="Live from the game server">زنده از سرور بازی</span>
+          <a href="/play/" class="text-link" data-en="Beat this score →">این رکورد رو بزن ←</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DOWNLOAD ─────────────────────────────────────────────────────── -->
+  <section class="section download-section" id="download">
+    <div class="container">
+      <div class="download-card reveal">
+        <div class="download-copy">
+          <span class="kicker" data-en="ANDROID · VERSION 1.2.0">اندروید · نسخه ۱.۲.۰</span>
+          <h2 data-en="Take Block Boom with you.">بلاک بوم رو با خودت ببر.</h2>
+          <p data-en="The complete Android experience: the same medium-difficulty balance, boss fights, upgrades, daily missions and the global leaderboard.">تجربه کامل اندروید: همون تعادل سختی متوسط، باس‌فایت‌ها، ارتقاها، ماموریت روزانه و لیدربورد جهانی.</p>
+          <div class="download-actions">
+            <a class="btn btn-primary btn-lg" href="/download/BlockBoom-1.2.0.apk" download id="apk-download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              <span data-en="Download APK — 13 MB">دانلود APK — ۱۳ مگابایت</span>
+            </a>
+            <button class="btn btn-ghost btn-lg" id="copy-link" type="button" data-en="Copy download link">کپی لینک دانلود</button>
+          </div>
+          <div class="download-meta">
+            <span><b data-en="Version">نسخه</b> 1.2.0 (24)</span>
+            <span><b data-en="Size">حجم</b> 13 MB</span>
+            <span><b data-en="Requires">نیاز</b> Android 7+</span>
+          </div>
+          <details class="install-steps">
+            <summary data-en="How to install the APK">چطور APK رو نصب کنم؟</summary>
+            <ol>
+              <li data-en="Tap the download button and wait for the file to finish.">روی دکمه دانلود بزن و صبر کن فایل کامل بشه.</li>
+              <li data-en="Open the file. If Android asks, allow installs from this source.">فایل رو باز کن. اگه اندروید اجازه خواست، نصب از این منبع رو فعال کن.</li>
+              <li data-en="Install, open, pick a name and play.">نصب کن، بازش کن، یه اسم انتخاب کن و بازی کن.</li>
+            </ol>
+          </details>
+          <div class="checksum">
+            <span>SHA-256</span>
+<code id="sha-text">ff80727e7db20395f6d393bfa97e972282563031a99a64f70a9a07b031d710d8</code>
+            <button id="copy-sha" type="button" aria-label="کپی هش">کپی</button>
+          </div>
+        </div>
+        <div class="download-side">
+          <div class="qr-card">
+            <img src="/assets/icons/download-qr.png" alt="کد QR دانلود بلاک بوم" width="220" height="220">
+            <p data-en="Scan with your phone to download">با گوشی اسکن کن و دانلود کن</p>
+          </div>
+          <div class="store-badges">
+            <span class="store-badge"><span>🤖</span><span><small data-en="Direct APK">APK مستقیم</small><strong>Android</strong></span></span>
+            <span class="store-badge"><span>🌐</span><span><small data-en="Installable">نصب‌شدنی</small><strong>PWA</strong></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ──────────────────────────────────────────────────────────── -->
+  <section class="section" id="faq">
+    <div class="container narrow">
+      <header class="section-head reveal">
+        <span class="kicker" data-en="QUESTIONS">سوال‌های رایج</span>
+        <h2 data-en="The short answers.">جواب‌های کوتاه.</h2>
+      </header>
+      <div class="faq-list">
+        <details class="faq-item reveal">
+          <summary><span data-en="Is the web version the same game as Android?">آیا نسخه وب همون بازی اندرویده؟</span><i></i></summary>
+          <p data-en="Yes — the same core loop: drag the cannon, numbered blocks, 72-block stages, the Mother every 10 levels, six upgrades, power-ups, combos and the same medium-difficulty balance. The web build runs fully in your browser and installs as a PWA.">بله — همون حلقه اصلی: کشیدن توپ، بلاک‌های عددی، مراحل ۷۲ بلاکی، بلاک مادر هر ۱۰ مرحله، شش ارتقا، پاورآپ‌ها، کمبو و همون تعادل سختی متوسط. نسخه وب کاملاً توی مرورگر اجرا می‌شه و به‌صورت PWA نصب می‌شه.</p>
+        </details>
+        <details class="faq-item reveal">
+          <summary><span data-en="Do I need an account to play online?">برای بازی آنلاین باید ثبت‌نام کنم؟</span><i></i></summary>
+          <p data-en="No. Pick a display name and press start. Your progress is saved in this browser. The Android build keeps its own saved progress and global leaderboard.">نه. یه اسم نمایشی انتخاب کن و شروع کن. پیشرفتت توی همین مرورگر ذخیره می‌شه. نسخه اندروید پیشرفت و لیدربورد جهانی خودش رو داره.</p>
+        </details>
+        <details class="faq-item reveal">
+          <summary><span data-en="How do I install the Android version?">نسخه اندروید رو چطور نصب کنم؟</span><i></i></summary>
+          <p data-en="Download the APK from this page, open it on your phone, allow installs from the browser/file manager if prompted, and install. It is version 1.2.0 (code 24), the new public version with the Tapsell ad SDK and final release polish.">APK رو از همین صفحه دانلود کن، روی گوشی بازش کن، اگه لازم شد اجازه نصب از مرورگر/فایل‌منیجر رو بده و نصب کن. نسخه ۱.۲.۰ (کد ۲۴) نسخهٔ جدیه — سرویس تبلیغاتی تپسل و پالایش نهایی.</p>
+        </details>
+        <details class="faq-item reveal">
+          <summary><span data-en="Does it work offline?">آفلاین هم کار می‌کنه؟</span><i></i></summary>
+          <p data-en="The PWA does. After the first load, the service worker caches the game shell and assets, so you can keep playing without a connection. The Android APK is fully offline as well.">نسخه PWA بله. بعد از اولین بار لود، سرویس‌ورکر پوسته بازی و فایل‌ها رو کش می‌کنه و بدون اینترنت هم بازی می‌کنی. نسخه اندروید هم کاملاً آفلاینه.</p>
+        </details>
+        <details class="faq-item reveal">
+          <summary><span data-en="What changed in version 1.2?">نسخه ۱.۲ چی تغییر کرده؟</span><i></i></summary>
+          <p data-en="Version 1.2 adds a milestone chest every five levels (boss chests pay double), a perfect-clear coin bonus, and a smoother retry when hearts run out. The Android build runs on the Tapsell ad SDK, with rewarded and banner ads rebuilt around Tapsell's show API.">نسخه ۱.۲ یک صندوق جایزه هر پنج مرحله اضافه می‌کند (صندوق باس دو برابر)، پاداش سکه برای کلیر بدون آسیب، و مسیر «تلاش دوباره» روان‌تر وقتی قلب تمام می‌شود. اپلیکیشن اندروید هم حالا روی تپسل اجرا می‌شود و بنر و جایزه با API نمایش تپسل پیاده‌سازی شده است.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FINAL CTA ────────────────────────────────────────────────────── -->
+  <section class="final-cta container reveal">
+    <div class="final-card">
+      <div class="final-glow" aria-hidden="true"></div>
+      <span class="kicker" data-en="READY?">آماده‌ای؟</span>
+      <h2 data-en="Ready for the next run?">آماده‌ی مرحله بعدی؟</h2>
+      <p data-en="Version 1.2, Tapsell-powered and ready. Pick your cannon and go.">نسخه ۱.۲، با تپسل و آماده. توپت رو بردار و برو.</p>
+      <div class="cta-row center">
+        <a class="btn btn-primary btn-lg" href="/play/"><span data-en="Play now">همین حالا بازی کن</span></a>
+        <a class="btn btn-ghost btn-lg" href="/download/BlockBoom-1.2.0.apk" download><span data-en="Download Android">دانلود اندروید</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="#top">
+        <span class="brand-mark"><img src="/assets/icons/icon-192.png" alt="" width="40" height="40"></span>
+        <span class="brand-text"><strong data-en="Block Boom">بلاک بوم</strong><small>BLOCK BOOM 1.2</small></span>
+      </a>
+      <p data-en="A fast little arcade game about breaking blocks and breaking records.">یه بازی ارکید کوچیک و سریع درباره شکستن بلاک‌ها و شکستن رکوردها.</p>
+    </div>
+    <div class="footer-col">
+      <h4 data-en="Game">بازی</h4>
+      <a href="/play/" data-en="Play in browser">بازی در مرورگر</a>
+      <a href="/download/BlockBoom-1.2.0.apk" download data-en="Download APK">دانلود APK</a>
+      <a href="#leaderboard" data-en="Leaderboard">لیدربورد</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-en="About">درباره</h4>
+      <a href="#features" data-en="Features">امکانات</a>
+      <a href="#faq" data-en="FAQ">سوال‌ها</a>
+      <a href="https://amiraligrr.ir" target="_blank" rel="noopener" data-en="Developer">سازنده</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-en="Status">وضعیت</h4>
+      <span class="status-line"><span class="live-dot"></span><span id="server-status" data-en="Server online">سرور آنلاین</span></span>
+      <span class="status-line muted">v1.2.0 · code 24</span>
+      <span class="status-line muted">PWA · offline ready</span>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span>made by Amiraligrr, for everyone, everywhere</span>
+    <span>© 2026 Block Boom</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="to-top" id="to-top" type="button" aria-label="برگشت به بالا">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+</button>
+
+<script src="/site/landing.js" defer></script>
+</body>
+</html>

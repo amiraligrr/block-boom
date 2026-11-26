@@ -1,0 +1,40 @@
+# Block Boom — Next Generation Progress
+
+**Session started:** 2026-11-26
+**Working tree:** `/home/amiraligrr/Desktop/desktop/block boom`
+**Repository note:** Git root is the home directory, not this project. The project itself is untracked; do not run destructive git commands.
+
+## Initial state
+
+- Version in `app/build.gradle.kts`: `versionCode 25`, `versionName 1.2.0`.
+- Installed/live baseline: 1.2.0 (versionCode 24 on the server); v25 was registered as a draft for device testing.
+- Existing uncommitted work from this session:
+  - New V2 home: `ui/v2/HomeV2.kt`
+  - New in-game HUD: `ui/v2/GameHudV2.kt`
+  - New secondary screens: `ui/v2/SimpleScreens.kt`
+  - New routes: Missions / Achievements / Free Coins
+  - `GameMode` now includes `BOSS` and `TIME_ATTACK`
+  - Top ad slot moved above the NavHost; hidden on Home/Game/Upgrade/Onboarding
+  - Support now renders above the ban gate
+  - Renderer no longer copies entity lists every frame
+- Build status at session start: `:app:assembleMyketRelease` succeeds.
+
+## Constraints observed
+
+- No production deployment, no store upload, no database reset, no destructive migration.
+- Backend fixes are source-only; deployment is left to the owner.
+- No secrets are reproduced in docs.
+
+## Work log
+
+### 2026-11-26 — mode lifecycle fixes
+- Boss Fight retry now restarts the boss that was just attempted instead of recomputing from the campaign checkpoint.
+- BOSS/TIME_ATTACK no longer open unused server run sessions.
+- Game-over mode label now distinguishes Boss/Time Attack from Stage.
+- (continuing)
+
+## Known blockers
+
+- Production purchase verification and referral defects require backend deployment and/or schema migration; source fixes only in this session.
+- Full data reset is intentionally not executed.
+- Low-end performance profiling requires the physical test device.

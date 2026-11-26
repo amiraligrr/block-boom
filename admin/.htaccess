@@ -1,0 +1,73 @@
+# Block Boom Admin Panel
+Options -Indexes
+
+# Never serve these directly.
+#
+# config.php held the DB password, the admin password and the anti-cheat key
+# in plaintext, and unlike api/.htaccess there was no rule protecting it here.
+# It outputs nothing when fetched, but it is one LFI or one stray
+# config.php.bak away from a full panel takeover — and settings.php used to
+# rewrite this exact file from a web request.
+<FilesMatch "^(config|db|layout|api_bootstrap)\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Backups, editor leftovers, archives.
+<FilesMatch "\.(bak|old|orig|save|swp|sql|log|md|json|zip|yml|yaml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Dotfiles (.env, .git, …)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "no-referrer"
+
+    # No CSP before: the panel loads Tailwind and Chart.js from CDNs, and both
+    # load without SRI. A compromise of either CDN is therefore full script
+    # execution in the admin origin, where the session cookie lives — and
+    # cdn.tailwindcss.com in particular compiles CSS in the browser from
+    # arbitrary input. The CSP below does not add integrity (that needs a build
+    # step this panel does not have), but it pins the script allowlist so a
+    # compromised CDN cannot introduce new origins, and it blocks inline event
+    # handlers and eval, which is what an injected <script> or a DOM-XSS
+    # payload needs.
+    #
+    # 'unsafe-inline' is required in script-src because layout.php and the pages
+    # themselves use inline <script> blocks for Tailwind config and Chart.js
+    # setup. Remove it only together with those, by moving them to nonce'd
+    # external files.
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
+
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+</IfModule>
+
+# Never cache the panel's HTML. A cached login page or a cached admin page in a
+# shared proxy is a session leak waiting to happen.
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+    Header set Pragma "no-cache"
+</IfModule>

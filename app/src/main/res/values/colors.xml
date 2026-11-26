@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="deep_space">#101024</color>
+    <color name="neon_purple">#8157F5</color>
+    <color name="neon_cyan">#42D9FF</color>
+    <color name="neon_pink">#F47AC8</color>
+    <color name="neon_gold">#FFD166</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>

@@ -1,0 +1,16 @@
+# Copy to gradle.properties for local release builds. Never commit the real file.
+org.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.configuration-cache=true
+
+android.useAndroidX=true
+android.nonTransitiveRClass=true
+kotlin.code.style=official
+android.enableR8.fullMode=true
+
+# Release signing. Keep the keystore outside the repository.
+BLOCKBOOM_STORE_FILE=blockboom-release.jks
+BLOCKBOOM_STORE_PASSWORD=CHANGE_ME
+BLOCKBOOM_KEY_ALIAS=blockboom
+BLOCKBOOM_KEY_PASSWORD=CHANGE_ME

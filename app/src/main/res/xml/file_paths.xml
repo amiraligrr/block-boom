@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Lets the share sheet receive the generated result image.
+
+    Only the app's own cache directory is exposed, and only for reading. A
+    FileProvider is the only way to hand another app a local file on Android
+    7+ — without it, ACTION_SEND with a file:// Uri throws FileUriExposedException
+    and the share silently does nothing.
+
+    `cache-path` rather than `files-path` on purpose: the image is a
+    regenerable artefact, not user data, so it belongs in the cache directory
+    that the system is free to reclaim.
+-->
+<paths>
+    <cache-path
+        name="share"
+        path="share/" />
+</paths>
