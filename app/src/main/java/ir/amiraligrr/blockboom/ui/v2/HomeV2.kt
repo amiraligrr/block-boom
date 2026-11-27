@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -299,16 +300,28 @@ fun HomeV2(
 
 @Composable
 private fun NeonMenuBackdrop() {
-    val infinite = rememberInfiniteTransition(label = "menuBackdrop")
-    val phase by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = 6.28318f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(22000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "phase"
-    )
+    val context = LocalContext.current
+    val lowRam = remember(context) {
+        runCatching {
+            (context.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager)
+                .isLowRamDevice
+        }.getOrDefault(false)
+    }
+    // A static backdrop on a low-RAM device keeps the menu off the GPU's
+    // critical path. The cubes and glow are decoration, not information.
+    val phase = if (lowRam) 0f else {
+        val infinite = rememberInfiniteTransition(label = "menuBackdrop")
+        val animated by infinite.animateFloat(
+            initialValue = 0f,
+            targetValue = 6.28318f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(22000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "phase"
+        )
+        animated
+    }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         // Planet in the upper right.

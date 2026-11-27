@@ -41,6 +41,16 @@
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.BlockBoom">
 
+        <!--
+            Robolectric's createComposeRule() launches a bare ComponentActivity.
+            It must be declared in the merged manifest for local UI tests to
+            resolve it. Not exported and has no intent filter, so it is not a
+            launchable surface in the shipping app.
+        -->
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
