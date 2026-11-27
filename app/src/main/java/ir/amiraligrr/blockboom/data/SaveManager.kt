@@ -708,6 +708,78 @@ class SaveManager(context: Context) {
         get() = prefs.getString(KEY_PLAYER_NAME, "") ?: ""
         set(value) = prefs.edit().putString(KEY_PLAYER_NAME, value.trim().take(16)).apply()
 
+    /**
+     * Account XP for the new-generation profile.
+     *
+     * Kept separate from [currentLevel] (the campaign checkpoint) and from
+     * [recordBestLevel] (the endless record). The reference menu shows an
+     * account level and an XP bar; this is that value, and it is earned from
+     * play rather than copied from the stage number.
+     */
+    var xp: Long
+        get() = prefs.getLong(KEY_XP, 0L)
+        private set(value) = prefs.edit().putLong(KEY_XP, value.coerceAtLeast(0L)).apply()
+
+    /** XP required to move from [level] to `level + 1`. */
+    fun xpNeededFor(level: Int): Long {
+        val safe = level.coerceAtLeast(1)
+        return 100L + (safe - 1).toLong() * 75L
+    }
+
+    /** Current account level, derived from [xp]. Starts at 1. */
+    fun accountLevel(): Int {
+        var level = 1
+        var remaining = xp
+        while (remaining >= xpNeededFor(level) && level < 999) {
+            remaining -= xpNeededFor(level)
+            level++
+        }
+        return level
+    }
+
+    /** XP accumulated inside the current account level. */
+    fun xpIntoLevel(): Long {
+        var level = 1
+        var remaining = xp
+        while (remaining >= xpNeededFor(level) && level < 999) {
+            remaining -= xpNeededFor(level)
+            level++
+        }
+        return remaining
+    }
+
+    /** 0..1 progress toward the next account level. */
+    fun xpProgress(): Float {
+        val level = accountLevel()
+        val needed = xpNeededFor(level).coerceAtLeast(1L)
+        return (xpIntoLevel().toFloat() / needed).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Adds run XP and returns how many account levels were gained.
+     *
+     * The formula is deliberately linear in the things a run already reports
+     * (score, blocks, levels cleared, coins) so it cannot be farmed by idling:
+     * every term requires playing.
+     */
+    fun addRunXp(score: Int, blocks: Int, levelsCleared: Int, coins: Int): Int {
+        val gained = (
+            score.coerceAtLeast(0) / 25 +
+                blocks.coerceAtLeast(0) / 3 +
+                levelsCleared.coerceAtLeast(0) * 15 +
+                coins.coerceAtLeast(0) / 10
+            ).coerceIn(0, 5000)
+        if (gained <= 0) return 0
+        val before = accountLevel()
+        xp += gained.toLong()
+        return (accountLevel() - before).coerceAtLeast(0)
+    }
+
+    /** Restores a server snapshot without ever lowering local XP. */
+    fun restoreXp(value: Long) {
+        if (value > xp) xp = value
+    }
+
     /** Lifetime score accumulated across all runs — used for the leaderboard. */
     var totalScore: Long
         get() = prefs.getLong(KEY_TOTAL_SCORE, 0L)
@@ -948,6 +1020,15 @@ class SaveManager(context: Context) {
         if (bestCombo > statBestCombo) statBestCombo = bestCombo
         if (score > statBestRunScore) statBestRunScore = score
         if (deepestLevel > statDeepestLevel) statDeepestLevel = deepestLevel
+
+        // Account XP is earned by playing, never by waiting. The run totals
+        // are already deduplicated by GameViewModel's bank latch.
+        addRunXp(
+            score = score,
+            blocks = blocks,
+            levelsCleared = levelsCleared,
+            coins = coins,
+        )
 
         // Today's bucket. These are the rows the admin players page reads,
         // and they exist for every player — not only the handful who submit a
@@ -1270,6 +1351,7 @@ class SaveManager(context: Context) {
         const val KEY_LEVEL = "current_level"
         const val KEY_COINS = "coins"
         const val KEY_GEMS = "gems"
+        private const val KEY_XP = "account_xp"
         private const val KEY_GAME_MODE = "preferred_game_mode"
         private const val KEY_RECORD_BEST_LEVEL = "record_best_level"
         private const val KEY_RECORD_BEST_SCORE = "record_best_score"

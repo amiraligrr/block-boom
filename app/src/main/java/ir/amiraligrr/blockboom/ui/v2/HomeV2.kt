@@ -220,7 +220,8 @@ fun HomeV2(
                 Spacer(Modifier.height(4.dp))
                 ProfileRow(
                     name = saveManager.playerName.ifBlank { "بازیکن" },
-                    level = saveManager.currentLevel,
+                    level = saveManager.accountLevel(),
+                    xpProgress = saveManager.xpProgress(),
                     onSettings = onSettings
                 )
                 Spacer(Modifier.height(8.dp))
@@ -399,7 +400,12 @@ private fun NeonMenuBackdrop() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun ProfileRow(name: String, level: Int, onSettings: () -> Unit) {
+private fun ProfileRow(
+    name: String,
+    level: Int,
+    xpProgress: Float,
+    onSettings: () -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -438,7 +444,7 @@ private fun ProfileRow(name: String, level: Int, onSettings: () -> Unit) {
                 maxLines = 1
             )
             Text(
-                text = "مرحله $level",
+                text = "سطح $level",
                 color = TextDim,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
@@ -454,7 +460,7 @@ private fun ProfileRow(name: String, level: Int, onSettings: () -> Unit) {
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth((((level - 1).coerceAtLeast(0) % 10) + 1) / 10f)
+                        .fillMaxWidth(xpProgress.coerceIn(0f, 1f))
                         .height(7.dp)
                         .clip(RoundedCornerShape(50))
                         .background(Brush.horizontalGradient(listOf(NeonPurple, NeonMagenta)))

@@ -259,6 +259,7 @@ object PlayerSyncManager {
 
     private fun metaJson(): JSONObject = JSONObject().apply {
         put("player_name", save.playerName)
+        put("xp", save.xp)
         put("theme_mode", save.themeMode.name)
         put("onboarding_completed", save.onboardingCompleted)
         put("coach_done", save.coachDone)
@@ -331,6 +332,7 @@ object PlayerSyncManager {
             progress.optJSONObject("meta")?.let { meta ->
                 val name = meta.optString("player_name", "").trim()
                 if (name.isNotBlank()) save.playerName = name
+                save.restoreXp(meta.optLong("xp", 0L))
 
                 // Theme is a player preference, not progress. Restore it only
                 // on register/recover, where the server snapshot is allowed to

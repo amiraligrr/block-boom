@@ -217,7 +217,11 @@ fun GameOverScreen(
             }
 
             Text(
-                text = stringResource(R.string.game_over),
+                text = when (engine.mode) {
+                    GameMode.TIME_ATTACK -> "زمان تمام شد!"
+                    GameMode.BOSS -> "نبرد تمام شد"
+                    else -> stringResource(R.string.game_over)
+                },
                 style = MaterialTheme.typography.displayMedium,
                 color = c.coral,
                 textAlign = TextAlign.Center
@@ -455,7 +459,11 @@ fun GameOverScreen(
                     if (!isRecord) {
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            text = stringResource(R.string.stage_not_ranked),
+                            text = if (engine.mode == GameMode.STAGE) {
+                                stringResource(R.string.stage_not_ranked)
+                            } else {
+                                "این مود فعلاً وارد لیدربرد رکورد نمی‌شود"
+                            },
                             style = MaterialTheme.typography.labelMedium,
                             color = c.textMuted,
                             textAlign = TextAlign.Center
