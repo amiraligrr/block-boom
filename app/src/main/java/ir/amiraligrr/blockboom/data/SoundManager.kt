@@ -32,7 +32,7 @@ class SoundManager(val context: Context, private val saveManager: SaveManager) {
 
     private val pool: SoundPool? = try {
         SoundPool.Builder()
-            .setMaxStreams(16)
+            .setMaxStreams(24)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_GAME)
@@ -496,7 +496,10 @@ class SoundManager(val context: Context, private val saveManager: SaveManager) {
         try {
             val volume = (baseVolume * (1f + rand.nextFloat() * 0.1f - 0.05f)).coerceIn(0.3f, 1f)
             val pitch = pitchOverride ?: (1f + rand.nextFloat() * pitchVariance - pitchVariance / 2).coerceIn(0.7f, 1.4f)
-            pool?.play(id, volume, volume, 1, 0, pitch)
+            // A touch of stereo width. Not positional audio — just enough that
+            // repeated hits do not stack into one mono spike on phone speakers.
+            val pan = 0.88f + rand.nextFloat() * 0.12f
+            pool?.play(id, volume * pan, volume * (1.06f - pan), 1, 0, pitch)
         } catch (t: Throwable) {
             Log.w(TAG, "play failed", t)
         }
@@ -504,6 +507,7 @@ class SoundManager(val context: Context, private val saveManager: SaveManager) {
         if (saveManager.vibrationEnabled) {
             val vib = when (event) {
                 SoundEvent.BLOCK_DESTROY -> 45L to 180
+                SoundEvent.BLOCK_HIT, SoundEvent.BLOCK_CRACK -> 22L to 90
                 SoundEvent.BOSS_HIT -> 70L to 220
                 SoundEvent.BOSS_SPAWN -> 80L to 200
                 SoundEvent.COIN -> 18L to 110
@@ -596,30 +600,50 @@ class SoundManager(val context: Context, private val saveManager: SaveManager) {
                 playInternal(event, crackVol, crackPitchVar)
             }
             SoundEvent.BLOCK_DESTROY -> {
-                // Punch with humanized pitch and occasional fat layer
+                // Punch + body: a short low layer under the crack gives the
+                // hit weight on tiny phone speakers, where a single high crack
+                // reads as a click.
                 val destroyPitch = 0.92f + rand.nextFloat() * 0.18f
-                playInternal(event, 0.62f, 0.14f, destroyPitch)
-                if (rand.nextFloat() < 0.28f) playInternal(event, 0.38f, 0.10f, 0.82f + rand.nextFloat() * 0.08f)
+                playInternal(event, 0.66f, 0.12f, destroyPitch)
+                playInternal(
+                    event,
+                    0.30f + rand.nextFloat() * 0.06f,
+                    0.04f,
+                    (destroyPitch * 0.62f).coerceIn(0.50f, 0.78f)
+                )
+                if (rand.nextFloat() < 0.24f) {
+                    playInternal(SoundEvent.COIN, 0.16f, 0f, 1.42f + rand.nextFloat() * 0.1f)
+                }
             }
             SoundEvent.COIN -> {
                 if (now - lastCoinTime < 420) coinPitchStreak++ else coinPitchStreak = 0
                 lastCoinTime = now
                 val escalate = (coinPitchStreak * 0.065f).coerceAtMost(0.32f)
                 val coinPitch = (1f + escalate + rand.nextFloat() * 0.14f - 0.07f).coerceIn(0.92f, 1.42f)
-                val coinVol = 0.44f + rand.nextFloat() * 0.10f
+                val coinVol = 0.46f + rand.nextFloat() * 0.10f
                 playInternal(event, coinVol, 0.08f, coinPitch)
+                // A tiny octave sparkle on streaks makes a shake of coins read
+                // as a chain without adding another sample.
+                if (coinPitchStreak >= 3) {
+                    playInternal(event, 0.18f, 0f, (coinPitch * 1.55f).coerceAtMost(1.75f))
+                }
             }
             SoundEvent.POWER_UP_SPAWN -> playInternal(event, 0.52f, 0.12f, 1.02f + rand.nextFloat() * 0.08f)
             SoundEvent.POWER_UP_COLLECT -> playInternal(event, 0.60f, 0.16f, 1.10f + rand.nextFloat() * 0.12f)
             SoundEvent.FREEZE_ACTIVATE -> playInternal(event, 0.56f, 0.12f, 0.86f + rand.nextFloat() * 0.06f)
-            SoundEvent.BOSS_HIT -> playInternal(event, 0.74f, 0.10f, 0.92f + rand.nextFloat() * 0.10f)
+            SoundEvent.BOSS_HIT -> {
+                val pitch = 0.92f + rand.nextFloat() * 0.10f
+                playInternal(event, 0.76f, 0.08f, pitch)
+                playInternal(SoundEvent.BLOCK_DESTROY, 0.24f, 0.04f, 0.55f)
+            }
             SoundEvent.BOSS_SPAWN -> playInternal(event, 0.70f, 0.08f, 0.90f + rand.nextFloat() * 0.06f)
             SoundEvent.LEVEL_COMPLETE -> playInternal(event, 0.68f, 0f, 1f)
             SoundEvent.GAME_OVER -> playInternal(event, 0.66f, 0f, 0.95f)
             SoundEvent.HEART_LOST -> playInternal(event, 0.64f, 0.08f, 0.88f + rand.nextFloat() * 0.06f)
             SoundEvent.COMBO -> {
                 val comboPitch = 1.12f + rand.nextFloat() * 0.28f
-                playInternal(event, 0.58f, 0f, comboPitch)
+                playInternal(event, 0.62f, 0f, comboPitch)
+                playInternal(SoundEvent.POWER_UP_SPAWN, 0.22f, 0f, 1.30f)
             }
         }
     }

@@ -246,6 +246,9 @@ fun HomeV2(
                 PlayButton { startFromMenu(MenuMode.CLASSIC) }
 
                 Spacer(Modifier.height(10.dp))
+                ModeGrid(onPick = startFromMenu)
+
+                Spacer(Modifier.height(10.dp))
                 QuickActions(
                     onShop = onShop,
                     onSkins = onSkins,
@@ -253,14 +256,6 @@ fun HomeV2(
                     onFreeCoins = onFreeCoins
                 )
 
-                Spacer(Modifier.height(10.dp))
-                RecordSummaryCard(
-                    saveManager = saveManager,
-                    onLeaderboard = onLeaderboard
-                )
-
-                Spacer(Modifier.weight(1f))
-                ModeGrid(onPick = startFromMenu)
 
                 if (dailyClaimed != null) {
                     Spacer(Modifier.height(10.dp))
@@ -367,26 +362,32 @@ private fun NeonMenuBackdrop() {
         drawPath(castle, color = if (c.isDark) Color(0xFF1B0B3F) else Color(0xFFD9CCF5))
         drawPath(castle, color = c.emerald.copy(alpha = 0.10f))
 
-        // Floating cubes. Each has its own lane, speed and tilt.
-        val cubes = listOf(
-            Triple(0.08f, 0.22f, Color(0xFF7B3BFF)),
-            Triple(0.78f, 0.32f, Color(0xFF2D7BFF)),
-            Triple(0.20f, 0.48f, Color(0xFFE53BFF)),
-            Triple(0.88f, 0.55f, Color(0xFF35E08B)),
-            Triple(0.12f, 0.70f, Color(0xFFFF8A2A)),
-            Triple(0.70f, 0.78f, Color(0xFF9B4DFF)),
-            Triple(0.46f, 0.12f, Color(0xFF23D5FF)),
-            Triple(0.32f, 0.34f, Color(0xFFFFD23F))
+        // Falling blocks. The menu should read as the game's own board
+        // breathing behind the UI, not as unrelated floating decorations.
+        val palette = listOf(
+            Color(0xFF7B3BFF), Color(0xFF2D7BFF), Color(0xFFE53BFF),
+            Color(0xFF35E08B), Color(0xFFFF8A2A), Color(0xFF9B4DFF),
+            Color(0xFF23D5FF), Color(0xFFFFD23F)
         )
-        cubes.forEachIndexed { i, (fx, fy, color) ->
-            val drift = sin(phase + i * 0.9f) * size.width * 0.012f
-            val bob = cos(phase * 0.8f + i) * size.height * 0.008f
-            val center = Offset(size.width * fx + drift, size.height * fy + bob)
-            val side = size.width * (0.055f + (i % 3) * 0.012f)
-            rotate(degrees = (phase * 18f + i * 37f) % 360f, pivot = center) {
+        val progress = phase / 6.28318f
+        val count = if (lowRam) 5 else 12
+        repeat(count) { i ->
+            val lane = ((i * 0.137f) + 0.06f) % 1f
+            val fallSpeed = 0.72f + (i % 4) * 0.18f
+            val fall = (progress * fallSpeed + i * 0.13f) % 1f
+            val side = size.width * (0.050f + (i % 4) * 0.011f)
+            val sway = sin(phase * 0.8f + i * 1.3f) * size.width * 0.014f
+            val center = Offset(
+                x = size.width * lane + sway,
+                y = -side + (size.height + side * 2f) * fall
+            )
+            rotate(degrees = (phase * 24f + i * 37f) % 360f, pivot = center) {
                 drawRoundRect(
                     brush = Brush.linearGradient(
-                        colors = listOf(color.copy(alpha = 0.95f), color.copy(alpha = 0.35f)),
+                        colors = listOf(
+                            palette[i % palette.size].copy(alpha = 0.92f),
+                            palette[i % palette.size].copy(alpha = 0.30f)
+                        ),
                         start = center - Offset(side / 2f, side / 2f),
                         end = center + Offset(side / 2f, side / 2f)
                     ),
@@ -451,19 +452,24 @@ private fun ProfileRow(
 
         Spacer(Modifier.width(10.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = name,
                 color = c.textPrimary,
-                fontSize = 15.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
-                maxLines = 1
+                maxLines = 1,
+                textAlign = TextAlign.Center
             )
             Text(
                 text = "سطح $level",
                 color = c.textSecondary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(4.dp))
             Box(
@@ -603,7 +609,7 @@ private fun EventCard(
     val c = joyThemeColors()
     Row(
         modifier = modifier
-            .height(46.dp)
+            .height(42.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
@@ -617,9 +623,12 @@ private fun EventCard(
     ) {
         AppIconView(icon = icon, tint = accent, size = 20.dp)
         Spacer(Modifier.width(8.dp))
-        Column(Modifier.weight(1f)) {
-            Text(text = title, color = c.textPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.Black)
-            Text(text = subtitle, color = accent, fontSize = 8.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = title, color = c.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+            Text(text = subtitle, color = accent, fontSize = 9.5.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center)
         }
         Text(text = "›", color = c.textPrimary.copy(alpha = 0.8f), fontSize = 20.sp)
     }
@@ -662,7 +671,7 @@ private fun LogoBlock() {
         Text(
             text = "BLOCK",
             style = TextStyle(
-                fontSize = 52.sp,
+                fontSize = 50.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(c.textPrimary, c.emerald, c.emerald.copy(alpha = 0.75f))),
                 shadow = Shadow(color = Color(0xFF0B0620), offset = Offset(0f, 7f), blurRadius = 14f)
@@ -672,7 +681,7 @@ private fun LogoBlock() {
         Text(
             text = "BOOM",
             style = TextStyle(
-                fontSize = 44.sp,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(GoldTop, Color(0xFFFFC02E), GoldBottom)),
                 shadow = Shadow(color = Color(0xFF4A1600), offset = Offset(0f, 8f), blurRadius = 16f)
@@ -783,6 +792,7 @@ private fun QuickTile(
     Column(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
+            .height(62.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(listOf(c.surface, c.surfaceSoft)))
             .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
@@ -791,7 +801,7 @@ private fun QuickTile(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            AppIconView(icon = icon, tint = c.emerald, size = 20.dp)
+            AppIconView(icon = icon, tint = c.emerald, size = 18.dp)
             if (badge) {
                 Box(
                     modifier = Modifier
@@ -835,7 +845,7 @@ private fun ModeCard(
     val scale = pressScale(interaction)
     Box(
         modifier = modifier
-            .height(66.dp)
+            .height(72.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
             .background(Brush.linearGradient(listOf(mode.top, mode.bottom)))
@@ -852,99 +862,40 @@ private fun ModeCard(
                     )
                 )
         )
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 13.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 10.dp, vertical = 7.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(Color.Black.copy(alpha = 0.22f))
-                    .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                AppIconView(
-                    icon = mode.icon,
-                    tint = Color.White,
-                    size = if (mode == MenuMode.INFINITY) 30.dp else 24.dp,
-                    strokeWidth = 2.2.dp
-                )
-            }
-            Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f)) {
-                Text(text = mode.titleFa, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = mode.subtitleFa,
-                    color = Color.White.copy(alpha = 0.82f),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 2
-                )
-            }
-            Text(text = "›", color = Color.White, fontSize = 22.sp)
+            AppIconView(
+                icon = mode.icon,
+                tint = Color.White,
+                size = if (mode == MenuMode.INFINITY) 28.dp else 24.dp,
+                strokeWidth = 2.2.dp
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = mode.titleFa,
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+            Text(
+                text = mode.subtitleFa,
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                maxLines = 2
+            )
         }
     }
 }
 
-@Composable
-private fun RecordSummaryCard(
-    saveManager: SaveManager,
-    onLeaderboard: () -> Unit,
-) {
-    val c = joyThemeColors()
-    val hasRecord = saveManager.recordBestLevel > 0 || saveManager.recordBestScore > 0
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(c.surface)
-            .border(1.dp, c.cardBorder.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
-            .clickable(onClick = onLeaderboard)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppIconView(icon = AppIcon.TROPHY, tint = c.amber, size = 26.dp, strokeWidth = 2.dp)
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = "رکورد من",
-                color = c.textPrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Black,
-                maxLines = 1,
-            )
-            Text(
-                text = if (hasRecord) {
-                    "مرحله ${formatNumber(saveManager.recordBestLevel)}  •  ${formatNumber(saveManager.recordBestScore)} امتیاز"
-                } else {
-                    "هنوز رکوردی ثبت نشده — یک اجرای بی‌نهایت بازی کن"
-                },
-                color = c.textSecondary,
-                fontSize = 9.5.sp,
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = "🔥 ${formatNumber(saveManager.statBestCombo)}",
-                color = c.amber,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = "لیدربورد ‹",
-                color = c.textMuted,
-                fontSize = 8.5.sp,
-            )
-        }
-    }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Bottom navigation
@@ -1029,7 +980,7 @@ private fun NavItem(
         Text(
             text = label,
             color = if (active) c.textPrimary else c.textSecondary,
-            fontSize = 9.5.sp,
+            fontSize = 10.5.sp,
             fontWeight = if (active) FontWeight.Black else FontWeight.Medium,
             maxLines = 1
         )

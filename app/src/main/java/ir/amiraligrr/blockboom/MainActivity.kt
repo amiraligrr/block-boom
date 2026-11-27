@@ -12,17 +12,23 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalLayoutDirection
 import ir.amiraligrr.blockboom.ui.navigation.AppNavigation
 import ir.amiraligrr.blockboom.ui.theme.BlockBoomTheme
+import ir.amiraligrr.blockboom.data.GateStatus
+import ir.amiraligrr.blockboom.data.OnlineGate
+import ir.amiraligrr.blockboom.ui.v2.OnlineGateScreen
 import ir.amiraligrr.blockboom.ui.v2.intro.CinematicIntro
 import ir.amiraligrr.blockboom.ui.v2.intro.SessionIntro
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -67,8 +73,25 @@ class MainActivity : ComponentActivity() {
                     // is process-scoped: a cold launch shows the sequence,
                     // while rotation or returning from a run does not.
                     var showIntro by remember { mutableStateOf(!SessionIntro.started) }
+                    var gateStatus by remember { mutableStateOf(GateStatus.CHECKING) }
+                    val gateScope = rememberCoroutineScope()
+                    LaunchedEffect(Unit) {
+                        gateStatus = OnlineGate.check(applicationContext)
+                    }
                     Box(modifier = Modifier.fillMaxSize()) {
-                        AppNavigation()
+                        if (gateStatus == GateStatus.ONLINE) {
+                            AppNavigation()
+                        } else {
+                            OnlineGateScreen(
+                                status = gateStatus,
+                                onRetry = {
+                                    gateScope.launch {
+                                        gateStatus = GateStatus.CHECKING
+                                        gateStatus = OnlineGate.check(applicationContext)
+                                    }
+                                }
+                            )
+                        }
                         AnimatedVisibility(
                             visible = showIntro,
                             enter = fadeIn(tween(200)),
