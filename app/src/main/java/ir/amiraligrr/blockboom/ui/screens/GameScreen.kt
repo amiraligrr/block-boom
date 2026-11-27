@@ -461,7 +461,12 @@ fun GameScreen(
                     .clickable { engine.togglePause() },
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "⏸", color = Color.White, fontSize = 17.sp)
+                AppIconView(
+                    icon = AppIcon.PAUSE,
+                    tint = Color.White,
+                    size = 18.dp,
+                    strokeWidth = 2.dp
+                )
             }
 
             // The coach, centred over the play field.

@@ -61,6 +61,7 @@ import ir.amiraligrr.blockboom.ui.SubmitState
 import ir.amiraligrr.blockboom.ui.components.ButtonSize
 import ir.amiraligrr.blockboom.ui.components.NeonButton
 import ir.amiraligrr.blockboom.ui.components.AppIcon
+import ir.amiraligrr.blockboom.ui.components.AppIconView
 import ir.amiraligrr.blockboom.ui.components.ShareCard
 import ir.amiraligrr.blockboom.data.SaveManager
 import ir.amiraligrr.blockboom.ui.theme.NeonRed as NeonRedColor
@@ -210,7 +211,7 @@ fun GameOverScreen(
                                 RoundedCornerShape(50)
                             )
                     )
-                    Text("❤️", fontSize = 44.sp)
+                    AppIconView(icon = AppIcon.HEART, tint = c.coral, size = 44.dp, strokeWidth = 2.2.dp)
                 }
                 Spacer(Modifier.height(8.dp))
             }
