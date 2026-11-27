@@ -26,6 +26,11 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
+// `requirePost()` and `bb_admin_normalize_device()` live in layout.php. This
+// endpoint was the only admin POST that did not include it, so every
+// authenticated verification died with an undefined-function fatal before it
+// could record or grant anything.
+require_once __DIR__ . '/layout.php';
 requireAuth();
 requirePost();   // POST-only + CSRF token, like every other mutating page
 
@@ -71,6 +76,22 @@ if (!isset($products[$productId])) {
 
 if ($originalJson === '') {
     jsonResponse(['error' => 'originalJson الزامی است'], 400);
+}
+
+// Bind the token we store to the token inside the signed receipt. The old
+// endpoint used the submitted token only as a database key, so a valid signed
+// receipt could be replayed with a new token string and mint another grant.
+$receipt = json_decode($originalJson, true);
+if (!is_array($receipt)) {
+    jsonResponse(['error' => 'originalJson نامعتبر است'], 400);
+}
+$receiptToken = (string)($receipt['purchaseToken'] ?? $receipt['token'] ?? '');
+if ($receiptToken === '' || !hash_equals($receiptToken, $purchaseToken)) {
+    jsonResponse(['error' => 'توکن خرید با رسید مطابقت ندارد'], 400);
+}
+$receiptProduct = (string)($receipt['productId'] ?? $receipt['product_id'] ?? '');
+if ($receiptProduct !== '' && $receiptProduct !== $productId) {
+    jsonResponse(['error' => 'شناسهٔ محصول با رسید مطابقت ندارد'], 400);
 }
 
 $signatureOk = $store === 'bazaar'

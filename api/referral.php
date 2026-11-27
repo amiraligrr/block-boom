@@ -48,23 +48,56 @@ function new_referral_code(): string {
     return $out;
 }
 
+/**
+ * Whether the referral table has the owner/redeemer split.
+ *
+ * The original schema overloaded `used_by` as both roles, which made every
+ * generated code look already-used. The migration adds owner_device,
+ * redeemed_by and redeemed_at. Until it runs, fall back to the old behaviour
+ * rather than turning the endpoint into a 500.
+ */
+function referral_has_owner_columns(PDO $pdo): bool {
+    try {
+        $pdo->query("SELECT owner_device, redeemed_by, redeemed_at FROM referrals LIMIT 0");
+        return true;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 try {
     $pdo = getPDO();
+    $hasOwner = referral_has_owner_columns($pdo);
 
     // ── status: list my codes and anything waiting to be claimed ───────────
     if ($action === 'status') {
-        $stmt = $pdo->prepare(
-            "SELECT code, used_by IS NOT NULL AS used, created_at
-               FROM referrals WHERE used_by = ? ORDER BY created_at DESC LIMIT 20"
-        );
+        $stmt = $hasOwner
+            ? $pdo->prepare(
+                "SELECT code, redeemed_by, coins_awarded, created_at
+                   FROM referrals WHERE owner_device = ? ORDER BY created_at DESC LIMIT 20"
+            )
+            : $pdo->prepare(
+                "SELECT code, used_by, coins_awarded, created_at
+                   FROM referrals WHERE used_by = ? ORDER BY created_at DESC LIMIT 20"
+            );
         $stmt->execute([$deviceId]);
         $codes = [];
         foreach ($stmt->fetchAll() as $r) {
+            $used = $hasOwner
+                ? ($r['redeemed_by'] !== null)
+                : ((int) ($r['used_by'] !== null) === 1);
+            $shareable = $hasOwner
+                ? ($r['redeemed_by'] === null && (int) $r['coins_awarded'] === 0)
+                : false;
             $codes[] = [
                 'code' => $r['code'],
-                'used' => (int) $r['used'] === 1,
+                'used' => $used,
+                // The client reads this to decide which code to share. It
+                // must be true only while the code has never paid out.
+                'shareable' => $shareable,
             ];
         }
+
         $stmt = $pdo->prepare(
             "SELECT COALESCE(SUM(coins),0) AS c, COUNT(*) AS n
                FROM coin_grants WHERE device_id = ? AND claimed_at IS NULL"
@@ -72,14 +105,18 @@ try {
         $stmt->execute([$deviceId]);
         $g = $stmt->fetch();
 
-        // How much of today's referral allowance is already spent, and how much
-        // this device has ever cashed out. The client needs both to render an
-        // honest "2 of 5 redeemed today" line — without redeemed_today it would
-        // have to guess when the cap is close and would invite players to hit a
-        // 429 and conclude the feature is broken.
-        $stmt = $pdo->prepare(
-            "SELECT COUNT(*) AS n FROM referrals WHERE used_by = ? AND DATE(created_at) = ?"
-        );
+        if ($hasOwner) {
+            $stmt = $pdo->prepare(
+                "SELECT COUNT(*) AS n FROM referrals
+                  WHERE redeemed_by = ? AND redeemed_at IS NOT NULL
+                    AND DATE(redeemed_at) = ?"
+            );
+        } else {
+            $stmt = $pdo->prepare(
+                "SELECT COUNT(*) AS n FROM referrals
+                  WHERE used_by = ? AND DATE(created_at) = ?"
+            );
+        }
         $stmt->execute([$deviceId, date('Y-m-d')]);
         $redeemedToday = (int) $stmt->fetch()['n'];
 
@@ -91,35 +128,39 @@ try {
         $claimedTotal = (int) $stmt->fetch()['c'];
 
         jsonResponse([
-            'ok'            => true,
-            'codes'         => $codes,
-            'pending_coins' => (int) $g['c'],
-            'pending_count' => (int) $g['n'],
-            'redeemed_today'=> $redeemedToday,
-            'max_per_day'   => REFERRAL_MAX_PER_DEVICE,
-            'reward_coins'  => REFERRAL_REWARD_COINS,
-            'claimed_total' => $claimedTotal,
+            'ok'             => true,
+            'codes'          => $codes,
+            'pending_coins'  => (int) $g['c'],
+            'pending_count'  => (int) $g['n'],
+            'redeemed_today' => $redeemedToday,
+            'max_per_day'    => REFERRAL_MAX_PER_DEVICE,
+            'reward_coins'   => REFERRAL_REWARD_COINS,
+            'claimed_total'  => $claimedTotal,
         ]);
     }
 
     // ── generate ───────────────────────────────────────────────────────────
     if ($action === 'generate') {
-        // One code per device, reused forever: codes are a referral handle,
-        // not a consumable, and re-minting them just fragments the graph.
-        $stmt = $pdo->prepare("SELECT code FROM referrals WHERE used_by = ? LIMIT 1");
+        $stmt = $hasOwner
+            ? $pdo->prepare("SELECT code FROM referrals WHERE owner_device = ? LIMIT 1")
+            : $pdo->prepare("SELECT code FROM referrals WHERE used_by = ? LIMIT 1");
         $stmt->execute([$deviceId]);
         $row = $stmt->fetch();
         if ($row) { jsonResponse(['ok' => true, 'code' => $row['code']]); }
 
-        // Retry on the rare collision, testing for a ROW rather than success.
         for ($attempt = 0; $attempt < 8; $attempt++) {
             $code = new_referral_code();
             try {
-                $pdo->prepare("INSERT INTO referrals (code, used_by) VALUES (?,?)")
-                    ->execute([$code, $deviceId]);
+                if ($hasOwner) {
+                    $pdo->prepare("INSERT INTO referrals (code, owner_device) VALUES (?,?)")
+                        ->execute([$code, $deviceId]);
+                } else {
+                    $pdo->prepare("INSERT INTO referrals (code, used_by) VALUES (?,?)")
+                        ->execute([$code, $deviceId]);
+                }
                 jsonResponse(['ok' => true, 'code' => $code]);
             } catch (PDOException $e) {
-                if ($e->getCode() !== '23000') throw $e;   // duplicate key -> retry
+                if ($e->getCode() !== '23000') throw $e;
             }
         }
         jsonResponse(['error' => 'Could not allocate a code, try again'], 503);
@@ -133,32 +174,30 @@ try {
 
     $pdo->beginTransaction();
     try {
-        // The daily cap is enforced INSIDE the transaction, after taking a
-        // lock on this device's referral rows. It used to be a plain SELECT
-        // before beginTransaction(), so two concurrent redemptions both read a
-        // count of 4, both passed the `< 5` check, and both paid out — the cap
-        // was really 6/day. SELECT ... FOR UPDATE on the index range
-        // (used_by, created_at) serialises the two requests for this device
-        // while leaving other devices unaffected.
-        //
-        // There is no per-device index covering used_by yet, so this locks by
-        // scanning; the table is tiny (one row per redemption) and the MIGRATION
-        // block adds KEY idx_used_day (used_by, created_at).
-        $stmt = $pdo->prepare(
-            "SELECT COUNT(*) AS n FROM referrals
-              WHERE used_by = ? AND DATE(created_at) = ?
-              FOR UPDATE"
-        );
+        if ($hasOwner) {
+            $stmt = $pdo->prepare(
+                "SELECT COUNT(*) AS n FROM referrals
+                  WHERE redeemed_by = ? AND DATE(redeemed_at) = ? FOR UPDATE"
+            );
+        } else {
+            $stmt = $pdo->prepare(
+                "SELECT COUNT(*) AS n FROM referrals
+                  WHERE used_by = ? AND DATE(created_at) = ? FOR UPDATE"
+            );
+        }
         $stmt->execute([$deviceId, $today]);
         if ((int) $stmt->fetch()['n'] >= REFERRAL_MAX_PER_DEVICE) {
             $pdo->rollBack();
             jsonResponse(['error' => 'Daily referral limit reached, try again tomorrow'], 429);
         }
 
-        // FOR UPDATE closes the read-then-write race: a second concurrent
-        // request for the same code blocks here, then sees used_by set and
-        // bails out instead of double-paying.
-        $stmt = $pdo->prepare("SELECT id, used_by FROM referrals WHERE code = ? FOR UPDATE");
+        if ($hasOwner) {
+            $stmt = $pdo->prepare(
+                "SELECT id, owner_device, redeemed_by FROM referrals WHERE code = ? FOR UPDATE"
+            );
+        } else {
+            $stmt = $pdo->prepare("SELECT id, used_by FROM referrals WHERE code = ? FOR UPDATE");
+        }
         $stmt->execute([$code]);
         $ref = $stmt->fetch();
 
@@ -166,23 +205,45 @@ try {
             $pdo->rollBack();
             jsonResponse(['error' => 'This code does not exist'], 404);
         }
-        if ($ref['used_by'] !== null) {
-            $pdo->rollBack();
-            jsonResponse(['error' => 'This code has already been used'], 409);
-        }
-        if ($ref['used_by'] === $deviceId) {
-            $pdo->rollBack();
-            jsonResponse(['error' => 'You cannot use your own code'], 400);
-        }
 
-        $pdo->prepare("UPDATE referrals SET used_by = ?, coins_awarded = 1 WHERE id = ?")
-            ->execute([$deviceId, $ref['id']]);
+        if ($hasOwner) {
+            if ($ref['redeemed_by'] !== null) {
+                $pdo->rollBack();
+                jsonResponse(['error' => 'This code has already been used'], 409);
+            }
+            if ($ref['owner_device'] === $deviceId) {
+                $pdo->rollBack();
+                jsonResponse(['error' => 'You cannot use your own code'], 400);
+            }
+            $pdo->prepare(
+                "UPDATE referrals SET redeemed_by = ?, redeemed_at = NOW(), coins_awarded = 1 WHERE id = ?"
+            )->execute([$deviceId, $ref['id']]);
 
-        // Record the reward as a claimable grant instead of touching a
-        // `leaderboard.coins` column that does not exist.
-        $pdo->prepare(
-            "INSERT INTO coin_grants (device_id, coins, reason, ref_code) VALUES (?,?,?,?)"
-        )->execute([$deviceId, REFERRAL_REWARD_COINS, 'referral', $code]);
+            // Both sides are paid, exactly once, in the same transaction.
+            $pdo->prepare(
+                "INSERT INTO coin_grants (device_id, coins, reason, ref_code) VALUES (?,?,?,?)"
+            )->execute([$deviceId, REFERRAL_REWARD_COINS, 'referral', $code]);
+            $owner = (string) ($ref['owner_device'] ?? '');
+            if ($owner !== '') {
+                $pdo->prepare(
+                    "INSERT INTO coin_grants (device_id, coins, reason, ref_code) VALUES (?,?,?,?)"
+                )->execute([$owner, REFERRAL_REWARD_COINS, 'referral', $code]);
+            }
+        } else {
+            if ($ref['used_by'] !== null) {
+                $pdo->rollBack();
+                jsonResponse(['error' => 'This code has already been used'], 409);
+            }
+            if ($ref['used_by'] === $deviceId) {
+                $pdo->rollBack();
+                jsonResponse(['error' => 'You cannot use your own code'], 400);
+            }
+            $pdo->prepare("UPDATE referrals SET used_by = ?, coins_awarded = 1 WHERE id = ?")
+                ->execute([$deviceId, $ref['id']]);
+            $pdo->prepare(
+                "INSERT INTO coin_grants (device_id, coins, reason, ref_code) VALUES (?,?,?,?)"
+            )->execute([$deviceId, REFERRAL_REWARD_COINS, 'referral', $code]);
+        }
 
         $pdo->commit();
     } catch (Throwable $e) {
@@ -191,9 +252,9 @@ try {
     }
 
     jsonResponse([
-        'ok'     => true,
-        'coins'  => REFERRAL_REWARD_COINS,
-        'code'   => $code,
+        'ok'    => true,
+        'coins' => REFERRAL_REWARD_COINS,
+        'code'  => $code,
     ]);
 
 } catch (PDOException $e) {

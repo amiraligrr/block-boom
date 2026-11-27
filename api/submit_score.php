@@ -146,6 +146,18 @@ function takeThrottleSlot(PDO $pdo, string $key): ?int {    $now = time();
 try {
     $pdo = getPDO();
 
+    // The leaderboard crown must not be a client-supplied boolean. Paid
+    // premium is granted locally today, so the server can only verify the
+    // operator grant; that is still the honest value to publish. Never write
+    // `is_premium` straight from the request.
+    $verifiedPremium = 0;
+    try {
+        [$operatorPremium, ] = bb_premium_for_device($pdo, $deviceId);
+        $verifiedPremium = $operatorPremium ? 1 : 0;
+    } catch (Throwable $e) {
+        $verifiedPremium = 0;
+    }
+
     // ── 2. ban check ───────────────────────────────────────────────────────
     $ban = bb_is_banned($pdo, $deviceId);
     if ($ban !== null) {
@@ -449,13 +461,13 @@ try {
                 SET name = ?, level = ?, score = ?, is_premium = ?, ip = ?,
                     is_record = 1, mode = 'record', score_rate = ?
               WHERE device_id = ?"
-        )->execute([$name, $level, $score, $isPremium, $ip, $scoreRate, $deviceId]);
+        )->execute([$name, $level, $score, $verifiedPremium, $ip, $scoreRate, $deviceId]);
     } else {
         $pdo->prepare(
             "INSERT INTO leaderboard
                 (device_id, name, level, score, is_premium, ip, is_record, mode, score_rate)
              VALUES (?,?,?,?,?,?,1,'record',?)"
-        )->execute([$deviceId, $name, $level, $score, $isPremium, $ip, $scoreRate]);
+        )->execute([$deviceId, $name, $level, $score, $verifiedPremium, $ip, $scoreRate]);
     }
 
     // Tag the row with the account, so a player who recovers on a new phone

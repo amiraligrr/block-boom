@@ -115,24 +115,23 @@ try {
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             // Pre-migration database: retry without account_id rather than
-            // losing the player's support request.
-            if ($accountId === null) {
-                try {
-                    $pdo->beginTransaction();
-                    $st = $pdo->prepare(
-                        "INSERT INTO tickets (device_id, player_name, subject, category) VALUES (?,?,?,?)"
-                    );
-                    $st->execute([$deviceId, $name, $subject, $category]);
-                    $ticketId = (int) $pdo->lastInsertId();
-                    $pdo->prepare("INSERT INTO ticket_messages (ticket_id, from_admin, body) VALUES (?,0,?)")
-                        ->execute([$ticketId, $body]);
-                    $pdo->commit();
-                } catch (Throwable $e2) {
-                    if ($pdo->inTransaction()) $pdo->rollBack();
-                    throw $e2;
-                }
-            } else {
-                throw $e;
+            // losing the player's support request. This must run for *any*
+            // failed INSERT, not only when the device has no account — a
+            // linked player on an un-migrated schema is exactly the case that
+            // used to return HTTP 500 and lock them out of support.
+            try {
+                $pdo->beginTransaction();
+                $st = $pdo->prepare(
+                    "INSERT INTO tickets (device_id, player_name, subject, category) VALUES (?,?,?,?)"
+                );
+                $st->execute([$deviceId, $name, $subject, $category]);
+                $ticketId = (int) $pdo->lastInsertId();
+                $pdo->prepare("INSERT INTO ticket_messages (ticket_id, from_admin, body) VALUES (?,0,?)")
+                    ->execute([$ticketId, $body]);
+                $pdo->commit();
+            } catch (Throwable $e2) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                throw $e2;
             }
         }
 

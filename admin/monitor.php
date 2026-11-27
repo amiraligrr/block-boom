@@ -205,6 +205,12 @@ const durOf = ms => {
     const s = Math.round(ms / 1000);
     return s < 60 ? s + ' ثانیه' : Math.floor(s / 60) + 'د ' + (s % 60) + 'ث';
 };
+// Telemetry meta/device fields are client-supplied. They are inserted with
+// innerHTML below, so escape them before they become markup. A stored payload
+// must never be able to run script in an authenticated admin session.
+const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
 
 // Chart.js defaults, so every chart on the page matches without repeating these.
 Chart.defaults.font.family = 'Vazirmatn, system-ui, sans-serif';
@@ -250,11 +256,11 @@ function renderFeed(feed) {
         const dev = e.device.length > 12 ? e.device.slice(0, 10) + '…' : e.device;
         return '<tr class="hover:bg-emerald-50/60">'
             + '<td class="px-4 py-2.5 text-emerald-500 text-xs whitespace-nowrap">' + clockOf(e.at) + '</td>'
-            + '<td class="px-4 py-2.5"><span class="px-2 py-1 rounded-lg text-xs font-semibold ' + st[0] + '">' + st[1] + '</span></td>'
-            + '<td class="px-4 py-2.5 text-emerald-500 font-mono text-xs" dir="ltr">' + dev + '</td>'
+            + '<td class="px-4 py-2.5"><span class="px-2 py-1 rounded-lg text-xs font-semibold ' + st[0] + '">' + escHtml(st[1]) + '</span></td>'
+            + '<td class="px-4 py-2.5 text-emerald-500 font-mono text-xs" dir="ltr">' + escHtml(dev) + '</td>'
             + '<td class="px-4 py-2.5 text-emerald-700">' + (e.level || '—') + '</td>'
             + '<td class="px-4 py-2.5 text-emerald-700">' + (e.value ? nf(e.value) : '—') + '</td>'
-            + '<td class="px-4 py-2.5 text-emerald-500 text-xs">' + (e.meta || (e.duration ? durOf(e.duration) : '—')) + '</td>'
+            + '<td class="px-4 py-2.5 text-emerald-500 text-xs">' + escHtml(e.meta || (e.duration ? durOf(e.duration) : '—')) + '</td>'
             + '</tr>';
     }).join('');
 }
@@ -373,7 +379,7 @@ function refresh() {
                         : o.outcome === 'gameover' ? 'اتمام اجرا'
                         : o.outcome === 'quit' ? 'خروج دستی'
                         : o.outcome;
-                    return '<div class="flex items-center justify-between"><span>' + label
+                    return '<div class="flex items-center justify-between"><span>' + escHtml(label)
                         + '</span><span class="font-bold">' + nf(o.count) + '</span></div>';
                 }).join('')
                 : '<span class="text-emerald-400">—</span>';
