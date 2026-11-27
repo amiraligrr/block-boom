@@ -85,3 +85,21 @@
 - Device disconnected again before the record-card build could be installed;
   the APK is built locally.
 - Deep Overhaul: Phase 1 audit complete, Phase 2 queued.
+
+## 2026-11-27 — Phase 2 slice: online startup gate
+
+- Added `OnlineGate` + `OnlineGateScreen`: real API health check before Home,
+  explicit offline vs server-error screens, exact Persian copy and retry.
+- Deliberately does not require `NET_CAPABILITY_VALIDATED` (international
+  validation can be blocked in Iran); only validated by our domestic API.
+- Added `OnlineGateTest` (5 cases).
+- Home: blocks now fall; typography centered/enlarged; quick actions moved
+  below modes; all three modes visible.
+- Sound: layered destruction/coin/boss/combo, stereo width, haptic additions.
+- Full suite: 81/81 PASS.
+- Ads decision recorded: keep standard Tapsell; no Tapsell Plus migration.
+  Current code has banner + rewarded; no interstitial zone is configured yet.
+- Latest build installed on the test device; visual re-check blocked by the
+  device locking/sleeping.
+- Phase 2 remains partially complete: account-sync gating and Stage/Ranked
+  consolidation are still pending. No DB/migration/deploy changes.
