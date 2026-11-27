@@ -71,3 +71,17 @@
 - Deep Overhaul audit (`docs/DEEP_OVERHAUL_AUDIT.md`) and phase queue
   (`docs/DEEP_OVERHAUL_QUEUE.md`) created. Phase 2 is queued; no destructive
   changes, migrations, or deployments performed.
+
+## 2026-11-27 — device verification + content loop
+
+- Installed the latest build on the Xiaomi test device (versionCode 25).
+- Verified the cold-start intro on-device: real launcher icon, BLOCK BOOM,
+  exact creator line, transition into Home.
+- Verified the new Home on-device: 3 modes, vector nav, rounded bottom bar,
+  no Boss, no gems, top banner/house fallback.
+- Added a real “رکورد من” card to Home (level, score, best combo, leaderboard).
+- Added a server announcement modal queue, held back during gameplay/upgrade.
+- Full suite: 76/76 PASS after the UI changes.
+- Device disconnected again before the record-card build could be installed;
+  the APK is built locally.
+- Deep Overhaul: Phase 1 audit complete, Phase 2 queued.
