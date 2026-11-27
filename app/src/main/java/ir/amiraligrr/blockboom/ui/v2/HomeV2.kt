@@ -204,12 +204,12 @@ fun HomeV2(
                 // the fixed design height would clip the mode cards, so scale
                 // the whole content block instead of introducing a scrollbar
                 // the reference does not have.
-                val designHeight = 820.dp
-                val scale = (maxHeight / designHeight).coerceIn(0.52f, 1f)
+                val designHeight = 760.dp
+                val scale = ((maxHeight * 0.94f) / designHeight).coerceIn(0.56f, 1f)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(if (scale >= 0.999f) maxHeight else designHeight)
+                        .height(if (scale >= 0.999f) maxHeight else maxHeight / scale)
                         .graphicsLayer {
                             scaleX = scale
                             scaleY = scale
@@ -254,14 +254,6 @@ fun HomeV2(
                 )
 
                 Spacer(Modifier.weight(1f))
-                Text(
-                    text = "حالت بازی",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        color = c.textPrimary,
-                        fontWeight = FontWeight.Black
-                    )
-                )
-                Spacer(Modifier.height(8.dp))
                 ModeGrid(onPick = startFromMenu)
 
                 if (dailyClaimed != null) {
@@ -837,7 +829,7 @@ private fun ModeCard(
     val scale = pressScale(interaction)
     Box(
         modifier = modifier
-            .height(76.dp)
+            .height(66.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
             .background(Brush.linearGradient(listOf(mode.top, mode.bottom)))

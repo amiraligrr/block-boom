@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.amiraligrr.blockboom.BuildConfig
 import ir.amiraligrr.blockboom.R
+import ir.amiraligrr.blockboom.ui.components.AppIcon
+import ir.amiraligrr.blockboom.ui.components.AppIconView
 import ir.tapsell.sdk.Tapsell
 import ir.tapsell.sdk.TapsellAd
 import ir.tapsell.sdk.TapsellAdRequestListener
@@ -562,7 +565,7 @@ private fun TapsellBanner(
     var gaveUp by remember { mutableStateOf(false) }
     // A blank 60dp band is worse than a house promo. Show the branded strip
     // after a short fill wait, and replace it the moment a real creative lands.
-    var showHouse by remember { mutableStateOf(false) }
+    var showHouse by remember { mutableStateOf(true) }
     val holder = remember { BannerViewHolder() }
 
     fun requestBanner() {
@@ -639,11 +642,14 @@ private fun TapsellBanner(
     // admin panel has a row instead of an unexplained empty band.
     LaunchedEffect(loaded) {
         if (loaded) {
+            // Keep the house strip over the first frames of a fill as well;
+            // Tapsell's AndroidView paints above Compose and can otherwise
+            // show an empty white/black box until its WebView draws.
+            delay(1_500L)
             showHouse = false
             return@LaunchedEffect
         }
-        delay(1_200L)
-        if (!loaded) showHouse = true
+        showHouse = true
     }
 
     LaunchedEffect(loaded, failed) {
@@ -675,7 +681,9 @@ private fun TapsellBanner(
         contentAlignment = Alignment.Center
     ) {
         AndroidView(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { alpha = if (loaded) 1f else 0f },
             factory = { viewContext ->
                 try {
                     TapsellBannerView(
@@ -784,29 +792,37 @@ private fun TapsellBanner(
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "🏆", fontSize = 20.sp)
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            text = "Block Boom بدون تبلیغ",
-                            color = Color(0xFFECFFF7),
-                            fontSize = 12.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Black
-                        )
-                        Text(
-                            text = "پریمیوم بگیر و بدون تبلیغ بازی کن",
-                            color = Color(0xFF8BB8A6),
-                            fontSize = 9.5.sp
-                        )
-                    }
+                    AppIconView(
+                        icon = AppIcon.CROWN,
+                        tint = Color(0xFFFBBF24),
+                        size = 18.dp,
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = "Block Boom",
+                        color = Color(0xFFECFFF7),
+                        fontSize = 11.sp,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = "بدون تبلیغ",
+                        color = Color(0xFF8BB8A6),
+                        fontSize = 9.sp,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f)
+                    )
                     if (onHouseClick != null) {
                         Text(
                             text = "ارتقا ‹",
                             color = Color(0xFFFBBF24),
-                            fontSize = 10.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            fontSize = 9.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            maxLines = 1
                         )
                     }
                 }
