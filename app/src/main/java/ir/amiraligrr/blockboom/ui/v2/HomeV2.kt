@@ -19,6 +19,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextStyle
@@ -197,11 +199,24 @@ fun HomeV2(
                     ),
                 modifier = Modifier.weight(1f).fillMaxWidth()
             ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                // The menu is a single-screen composition. On a short phone
+                // the fixed design height would clip the mode cards, so scale
+                // the whole content block instead of introducing a scrollbar
+                // the reference does not have.
+                val designHeight = 760.dp
+                val scale = (maxHeight / designHeight).coerceIn(0.72f, 1f)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (scale >= 0.999f) maxHeight else designHeight)
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                            transformOrigin = TransformOrigin(0.5f, 0f)
+                        }
+                        .padding(horizontal = 16.dp)
+                ) {
                 Spacer(Modifier.height(4.dp))
                 ProfileRow(
                     name = saveManager.playerName.ifBlank { "بازیکن" },
@@ -262,6 +277,7 @@ fun HomeV2(
                 }
 
                 Spacer(Modifier.height(8.dp))
+                }
             }
             }
 
