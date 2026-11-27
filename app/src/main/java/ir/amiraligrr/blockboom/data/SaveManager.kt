@@ -263,18 +263,6 @@ class SaveManager(context: Context) {
         get() = prefs.getLong(KEY_COINS, 0L)
         set(value) = prefs.edit().putLong(KEY_COINS, value).apply()
 
-    /**
-     * Premium currency for the new generation.
-     *
-     * Kept separate from [coins] so the store can sell two products with two
-     * different value curves, and so a future gem-only cosmetic cannot be
-     * bought with the upgrade currency. The old build has no gem economy, so
-     * a fresh install starts at zero and no migration invents a balance.
-     */
-    var gems: Long
-        get() = prefs.getLong(KEY_GEMS, 0L)
-        set(value) = prefs.edit().putLong(KEY_GEMS, value.coerceAtLeast(0L)).apply()
-
     /** Adds [amount] to the stored coin balance. */
     fun addCoins(amount: Long) {
         coins = (coins + amount).coerceAtLeast(0L)
@@ -1350,7 +1338,6 @@ class SaveManager(context: Context) {
 
         const val KEY_LEVEL = "current_level"
         const val KEY_COINS = "coins"
-        const val KEY_GEMS = "gems"
         private const val KEY_XP = "account_xp"
         private const val KEY_GAME_MODE = "preferred_game_mode"
         private const val KEY_RECORD_BEST_LEVEL = "record_best_level"

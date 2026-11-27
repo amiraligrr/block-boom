@@ -279,8 +279,11 @@ fun AppNavigation() {
         val showTopBanner = !ProgressState.isPremium.value &&
             route != null &&
             route !in setOf(
+                // The banner is required at the top of the app, including the
+                // home menu. It stays out of the live play field and the
+                // onboarding flow, where it would sit over the thing the
+                // player is trying to learn.
                 Screen.Onboarding.route,
-                Screen.Home.route,
                 Screen.Game.route,
                 Screen.Upgrade.route
             )

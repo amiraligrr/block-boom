@@ -129,8 +129,8 @@ fun GameOverScreen(
     // home screen already uses, shown at the moment the player asks to retry.
     var showNoLives by remember { mutableStateOf(false) }
 
-    val heartScale = remember { Animatable(0f) }
-    val heartAlpha = remember { Animatable(0f) }
+    val heartScale = remember { Animatable(1f) }
+    val heartAlpha = remember { Animatable(1f) }
     val heartBeat = remember { Animatable(1f) }
     val cardReveal = remember { Animatable(0f) }
     val showHeart = remember { mutableStateOf(false) }
@@ -184,10 +184,9 @@ fun GameOverScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 18.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             if (showHeart.value) {
                 Box(
@@ -197,12 +196,12 @@ fun GameOverScreen(
                             scaleY = heartScale.value * heartBeat.value
                             alpha = heartAlpha.value
                         }
-                        .size(108.dp),
+                        .size(64.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(96.dp)
+                            .size(56.dp)
                             .graphicsLayer { alpha = 0.45f }
                             .background(
                                 Brush.radialGradient(
@@ -211,7 +210,7 @@ fun GameOverScreen(
                                 RoundedCornerShape(50)
                             )
                     )
-                    DrawHeart(Modifier.size(88.dp), c.coral)
+                    Text("❤️", fontSize = 44.sp)
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -222,7 +221,7 @@ fun GameOverScreen(
                     GameMode.BOSS -> "نبرد تمام شد"
                     else -> stringResource(R.string.game_over)
                 },
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.headlineMedium,
                 color = c.coral,
                 textAlign = TextAlign.Center
             )
@@ -299,205 +298,118 @@ fun GameOverScreen(
             Spacer(Modifier.height(16.dp))
 
             // ── stats ────────────────────────────────────────────────────────
-            Box(
+            Column(
                 modifier = Modifier
                     .widthIn(max = 320.dp)
-                    .fillMaxWidth()
-                    .graphicsLayer {
-                        alpha = cardReveal.value
-                        translationY = (1f - cardReveal.value) * 60.dp.toPx()
-                    }
-                    .clip(RoundedCornerShape(26.dp))
-                    .background(c.gradientCardElevated)
-                    .border(1.2.dp, c.cardBorder, RoundedCornerShape(26.dp))
-                    .shadow(
-                        elevation = 18.dp,
-                        shape = RoundedCornerShape(26.dp),
-                        ambientColor = c.cardShadow,
-                        spotColor = c.emerald.copy(alpha = 0.16f)
-                    )
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.run_score),
-                        color = c.textMuted,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = formatNumber(runScore),
-                        color = c.textPrimary,
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Black
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Text(
-                        text = stringResource(R.string.coins),
-                        color = c.textMuted,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
                     Row(
-                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = formatNumber(initialCoins),
-                            color = c.textPrimary,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // What this level earned, on its own line under the balance.
-                    //
-                    // It used to sit beside the balance as "+N", which reads as
-                    // an addition — and it *was* being double counted. The engine
-                    // flushes the level's coins into the save before this screen
-                    // is ever composed, so `initialCoins` already contains them
-                    // while `coinsInLevel` reports the same total again. A player
-                    // who entered with 100 and collected 30 was shown 130 +30,
-                    // implying a balance of 160 on a screen they read before
-                    // deciding what to spend next.
-                    //
-                    // Labelled, the two figures stop implying a sum: the balance
-                    // is the balance, and this is what the level contributed to it.
-                    if (engine.coinsInLevel > 0 && !coinsDoubled) {
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.level_earned_coins),
-                            color = c.textMuted,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.coins_plus,
-                                formatNumber(engine.coinsInLevel.toLong())
-                            ),
-                            color = c.amber,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // Best combo of the run. Showing it is what makes the
-                    // mechanic legible as a skill the player has — without it
-                    // the chains they built leave no trace on the results
-                    // screen, and there is nothing to beat next time.
-                    if (engine.combo.best >= 2) {
-                        Spacer(Modifier.height(12.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = "🔥", fontSize = 16.sp)
-                            Spacer(Modifier.width(6.dp))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "بهترین کمبو: ${engine.combo.best}",
-                                color = c.amber,
-                                style = MaterialTheme.typography.titleMedium,
+                                text = stringResource(R.string.run_score),
+                                color = c.textSecondary,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                            Text(
+                                text = formatNumber(runScore),
+                                color = c.textPrimary,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(R.string.coins),
+                                color = c.textSecondary,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                            Text(
+                                text = formatNumber(initialCoins),
+                                color = c.textPrimary,
+                                style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Black
                             )
                         }
                     }
 
-                    // ── achievements earned this run ─────────────────────────
-                    //
-                    // On the results screen rather than in a menu, and only for
-                    // what was just earned. A milestone has to be seen at the
-                    // moment it happens or it is not a reward, it is a checkbox;
-                    // and a full achievements list here would bury the score,
-                    // which is the one number the player came to read.
+                    if (engine.coinsInLevel > 0 && !coinsDoubled) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.coins_plus,
+                                formatNumber(engine.coinsInLevel.toLong())
+                            ) + " " + stringResource(R.string.level_earned_coins),
+                            color = c.textSecondary,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    if (engine.combo.best >= 2) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "🔥 بهترین کمبو: ${engine.combo.best}",
+                            color = c.textPrimary,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
                     if (unlocks.isNotEmpty()) {
-                        Spacer(Modifier.height(12.dp))
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            unlocks.forEach { u ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(c.gradientGoldSoft)
-                                        .border(
-                                            1.dp,
-                                            c.amber.copy(alpha = 0.5f),
-                                            RoundedCornerShape(14.dp)
-                                        )
-                                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Text(text = u.emoji, fontSize = 18.sp)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(
-                                        text = stringResource(
-                                            R.string.ach_unlocked,
-                                            u.title,
-                                            formatNumber(u.coins)
-                                        ),
-                                        color = c.onGold,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Black,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
+                        Spacer(Modifier.height(6.dp))
+                        unlocks.take(2).forEach { u ->
+                            Text(
+                                text = stringResource(
+                                    R.string.ach_unlocked,
+                                    u.title,
+                                    formatNumber(u.coins)
+                                ),
+                                color = c.textPrimary,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
                         }
-                        // Cleared once the list has been on screen, so leaving and
-                        // coming back does not replay it — and so the flow value
-                        // cannot grow without bound across runs.
                         LaunchedEffect(unlocks) { onUnlocksShown() }
                     }
 
-                    // ── submit outcome ───────────────────────────────────────
-                    if (!isRecord) {
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = if (engine.mode == GameMode.STAGE) {
-                                stringResource(R.string.stage_not_ranked)
-                            } else {
-                                "این مود فعلاً وارد لیدربرد رکورد نمی‌شود"
-                            },
-                            style = MaterialTheme.typography.labelMedium,
-                            color = c.textMuted,
-                            textAlign = TextAlign.Center
-                        )
-                    } else {
+                    if (isRecord) {
                         when (submitState) {
                             is SubmitState.Done -> {
-                                Spacer(Modifier.height(12.dp))
-                                SubmitBadge(
+                                Spacer(Modifier.height(4.dp))
+                                Text(
                                     text = submitState.message,
-                                    isError = false,
-                                    colors = c
+                                    color = c.emerald,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
                                 )
                             }
                             is SubmitState.Failed -> {
-                                Spacer(Modifier.height(12.dp))
-                                SubmitBadge(
+                                Spacer(Modifier.height(4.dp))
+                                Text(
                                     text = submitState.message,
-                                    isError = true,
-                                    colors = c
+                                    color = c.coral,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    textAlign = TextAlign.Center
                                 )
                             }
                             is SubmitState.Submitting -> {
-                                Spacer(Modifier.height(12.dp))
+                                Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = "در حال ثبت رکورد…",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = c.textMuted
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = c.textSecondary
                                 )
                             }
                             SubmitState.Idle -> Unit
                         }
                     }
-                }
             }
 
             // ── name prompt ──────────────────────────────────────────────────
@@ -520,7 +432,7 @@ fun GameOverScreen(
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(10.dp))
 
             // ── actions ─────────────────────────────────────────────────────
             Column(
@@ -543,7 +455,7 @@ fun GameOverScreen(
                         if (livesManager.canStart()) onTryAgain() else showNoLives = true
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    size = ButtonSize.XLarge,
+                    size = ButtonSize.Large,
                     containerColor = c.emerald,
                     borderColor = Color.White.copy(alpha = 0.36f),
                     icon = AppIcon.PLAY
@@ -562,7 +474,7 @@ fun GameOverScreen(
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        size = ButtonSize.Large,
+                        size = ButtonSize.Medium,
                         containerColor = c.surface,
                         contentColor = c.textPrimary,
                         borderColor = c.cardBorder
@@ -573,7 +485,7 @@ fun GameOverScreen(
                     text = stringResource(R.string.home),
                     onClick = onHome,
                     modifier = Modifier.fillMaxWidth(),
-                    size = ButtonSize.Large,
+                    size = ButtonSize.Medium,
                     containerColor = c.surface,
                     contentColor = c.textPrimary,
                     borderColor = c.cardBorder,

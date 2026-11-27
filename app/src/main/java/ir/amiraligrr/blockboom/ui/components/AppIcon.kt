@@ -100,7 +100,19 @@ enum class AppIcon {
     MORE,
 
     /** A stage flag, for the campaign mode. */
-    FLAG
+    FLAG,
+
+    /** Concentric rings — Classic / target. */
+    TARGET,
+
+    /** The infinity loop — endless mode. */
+    INFINITY,
+
+    /** A stopwatch — Time Attack. */
+    TIMER,
+
+    /** Three bars — statistics. */
+    CHART
 }
 
 /**
@@ -663,6 +675,48 @@ private fun DrawScope.drawAppIcon(icon: AppIcon, tint: Color, stroke: Float) {
                 )
             }
         }
+
+        AppIcon.TARGET -> {
+            drawCircle(tint, radius = x(8f), center = Offset(x(12f), y(12f)), style = strokeStyle)
+            drawCircle(tint, radius = x(4.5f), center = Offset(x(12f), y(12f)), style = strokeStyle)
+            drawCircle(tint, radius = x(1.4f), center = Offset(x(12f), y(12f)))
+        }
+
+        AppIcon.INFINITY -> {
+            drawPath(
+                Path().apply {
+                    moveTo(x(7f), y(12f))
+                    cubicTo(x(7f), y(7.5f), x(11f), y(7.5f), x(12f), y(12f))
+                    cubicTo(x(13f), y(16.5f), x(17f), y(16.5f), x(17f), y(12f))
+                    cubicTo(x(17f), y(7.5f), x(13f), y(7.5f), x(12f), y(12f))
+                    cubicTo(x(11f), y(16.5f), x(7f), y(16.5f), x(7f), y(12f))
+                }, tint, style = strokeStyle
+            )
+        }
+
+        AppIcon.TIMER -> {
+            drawCircle(tint, radius = x(7.5f), center = Offset(x(12f), y(13f)), style = strokeStyle)
+            drawPath(
+                Path().apply {
+                    moveTo(x(9f), y(3.5f)); lineTo(x(15f), y(3.5f))
+                    moveTo(x(12f), y(3.5f)); lineTo(x(12f), y(5.5f))
+                    moveTo(x(12f), y(13f)); lineTo(x(12f), y(9f))
+                    moveTo(x(12f), y(13f)); lineTo(x(15f), y(14.5f))
+                }, tint, style = strokeStyle
+            )
+        }
+
+        AppIcon.CHART -> {
+            drawPath(
+                Path().apply {
+                    moveTo(x(4f), y(20f)); lineTo(x(20f), y(20f))
+                    moveTo(x(7f), y(20f)); lineTo(x(7f), y(12f))
+                    moveTo(x(12f), y(20f)); lineTo(x(12f), y(8f))
+                    moveTo(x(17f), y(20f)); lineTo(x(17f), y(15f))
+                }, tint, style = strokeStyle
+            )
+        }
+
     }
 }
 
@@ -677,5 +731,6 @@ private fun starPath(center: Offset, r: Float): Path {
             if (i == 0) moveTo(px, py) else lineTo(px, py)
         }
         close()
+
     }
 }

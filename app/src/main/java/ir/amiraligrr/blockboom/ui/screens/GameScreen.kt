@@ -372,19 +372,53 @@ fun GameScreen(
             // Tinted from the sky's own top colour so the seams disappear.
             .background(backdrop.sky.first())
     ) {
-        GameHudV2(
-            engine = engine,
+        HeaderBar(
             hearts = livesManager.lives,
             coins = initialCoins + engine.coinsInLevel,
-            isPremium = ProgressState.isPremium.value,
-            onPause = { engine.togglePause() }
+            level = if (isRecordRun) null else engine.level,
+            score = if (isRecordRun || isTimeAttack) engine.runScore else null,
+            isPremium = ProgressState.isPremium.value
         )
+
+        LevelProgressBar(
+            destroyed = engine.blocksDestroyed,
+            total = engine.totalBlocksInLevel,
+            level = engine.level,
+            recordMode = isRecordRun
+        )
+
+        if (isTimeAttack) {
+            TimeAttackBar(remaining = engine.timeAttackRemaining)
+        }
 
         if (isRecordRun && engine.recordBaseline > 0) {
             RecordChaseBar(
                 runScore = engine.runScore,
                 baseline = engine.recordBaseline
             )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(HUD_STRIP_HEIGHT)
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PowerUpTimer(
+                    engine = engine,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                ComboMeter(
+                    combo = engine.combo,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         Box(
@@ -413,6 +447,22 @@ fun GameScreen(
                 engine = engine,
                 modifier = Modifier.fillMaxSize()
             )
+
+            // One small pause target. The old screen had a full NeonButton
+            // floating over the field; this keeps the same reachable target
+            // without another piece of neon chrome competing with the board.
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(10.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.38f))
+                    .clickable { engine.togglePause() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "⏸", color = Color.White, fontSize = 17.sp)
+            }
 
             // The coach, centred over the play field.
             //

@@ -71,7 +71,10 @@ import ir.amiraligrr.blockboom.data.LivesManager
 import ir.amiraligrr.blockboom.data.SaveManager
 import ir.amiraligrr.blockboom.ui.dialogs.NoLivesDialog
 import ir.amiraligrr.blockboom.ui.screens.DailyRewardDialog
+import ir.amiraligrr.blockboom.ui.components.AppIcon
+import ir.amiraligrr.blockboom.ui.components.AppIconView
 import ir.amiraligrr.blockboom.ui.formatNumber
+import ir.amiraligrr.blockboom.ui.theme.joyThemeColors
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -91,9 +94,6 @@ private val NeonCyan = Color(0xFF23D5FF)
 private val GoldTop = Color(0xFFFFE58A)
 private val GoldBottom = Color(0xFFFF9D1C)
 private val Ink = Color(0xFF1A0A00)
-private val TextMain = Color(0xFFF8F3FF)
-private val TextDim = Color(0xFFB9A8D9)
-private val CardLine = Color(0xFF7A4AC2)
 
 /**
  * Four doors into the game. Kept separate from [GameMode] because the menu is
@@ -103,14 +103,13 @@ private val CardLine = Color(0xFF7A4AC2)
 enum class MenuMode(
     val titleFa: String,
     val subtitleFa: String,
-    val emoji: String,
+    val icon: AppIcon,
     val top: Color,
     val bottom: Color,
 ) {
-    CLASSIC("کلاسیک", "حالت اصلی بازی", "🎯", Color(0xFF2D7BFF), Color(0xFF0B2E8C)),
-    BOSS("نبرد باس", "رئیس‌ها را شکست بده", "👹", Color(0xFFE53BFF), Color(0xFF7A0B7A)),
-    INFINITY("بی‌نهایت", "بدون محدودیت", "∞", Color(0xFF35E08B), Color(0xFF0B6B3A)),
-    TIME_ATTACK("حمله زمانی", "۶۰ ثانیه، بیشترین امتیاز", "⏱", Color(0xFFFF8A2A), Color(0xFF9C2A05)),
+    CLASSIC("کلاسیک", "حالت اصلی بازی", AppIcon.TARGET, Color(0xFF2D7BFF), Color(0xFF0B2E8C)),
+    INFINITY("بی‌نهایت", "بدون محدودیت", AppIcon.INFINITY, Color(0xFF35E08B), Color(0xFF0B6B3A)),
+    TIME_ATTACK("حمله زمانی", "۶۰ ثانیه، بیشترین امتیاز", AppIcon.TIMER, Color(0xFFFF8A2A), Color(0xFF9C2A05)),
 }
 
 @Composable
@@ -152,7 +151,6 @@ fun HomeV2(
         start(
             when (menu) {
                 MenuMode.CLASSIC -> GameMode.STAGE
-                MenuMode.BOSS -> GameMode.BOSS
                 MenuMode.INFINITY -> GameMode.RECORD
                 MenuMode.TIME_ATTACK -> GameMode.TIME_ATTACK
             }
@@ -183,10 +181,11 @@ fun HomeV2(
         )
     }
 
+    val c = joyThemeColors()
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(VoidTop, VoidMid, VoidBottom)))
+            .background(Brush.verticalGradient(listOf(c.backgroundTop, c.backgroundMid, c.backgroundBottom)))
     ) {
         NeonMenuBackdrop()
 
@@ -205,8 +204,8 @@ fun HomeV2(
                 // the fixed design height would clip the mode cards, so scale
                 // the whole content block instead of introducing a scrollbar
                 // the reference does not have.
-                val designHeight = 760.dp
-                val scale = (maxHeight / designHeight).coerceIn(0.72f, 1f)
+                val designHeight = 820.dp
+                val scale = (maxHeight / designHeight).coerceIn(0.52f, 1f)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -228,7 +227,6 @@ fun HomeV2(
                 Spacer(Modifier.height(8.dp))
                 CurrencyRow(
                     coins = saveManager.coins,
-                    gems = saveManager.gems,
                     onAdd = onShop
                 )
                 Spacer(Modifier.height(8.dp))
@@ -258,8 +256,8 @@ fun HomeV2(
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = "حالت بازی",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = TextMain,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color = c.textPrimary,
                         fontWeight = FontWeight.Black
                     )
                 )
@@ -300,6 +298,7 @@ fun HomeV2(
 
 @Composable
 private fun NeonMenuBackdrop() {
+    val c = joyThemeColors()
     val context = LocalContext.current
     val lowRam = remember(context) {
         runCatching {
@@ -327,7 +326,7 @@ private fun NeonMenuBackdrop() {
         // Planet in the upper right.
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(Color(0xFF6D5BFF), Color(0xFF2B146B), Color(0x00120A2E)),
+                colors = if (c.isDark) listOf(Color(0xFF6D5BFF), Color(0xFF2B146B), Color(0x00120A2E)) else listOf(Color(0xFFC9B8FF), Color(0xFFEDE5FF), Color(0x00FFFFFF)),
                 center = Offset(size.width * 0.86f, size.height * 0.16f),
                 radius = size.width * 0.62f
             ),
@@ -338,7 +337,7 @@ private fun NeonMenuBackdrop() {
         // Purple horizon glow behind the logo.
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(NeonPurple.copy(alpha = 0.40f), Color.Transparent),
+                colors = listOf(c.emerald.copy(alpha = if (c.isDark) 0.30f else 0.14f), Color.Transparent),
                 center = Offset(size.width * 0.5f, size.height * 0.42f),
                 radius = size.width * 0.72f
             ),
@@ -367,8 +366,8 @@ private fun NeonMenuBackdrop() {
             lineTo(size.width, size.height)
             close()
         }
-        drawPath(castle, color = Color(0xFF1B0B3F))
-        drawPath(castle, color = NeonPurple.copy(alpha = 0.16f))
+        drawPath(castle, color = if (c.isDark) Color(0xFF1B0B3F) else Color(0xFFD9CCF5))
+        drawPath(castle, color = c.emerald.copy(alpha = 0.10f))
 
         // Floating cubes. Each has its own lane, speed and tilt.
         val cubes = listOf(
@@ -419,6 +418,7 @@ private fun ProfileRow(
     xpProgress: Float,
     onSettings: () -> Unit,
 ) {
+    val c = joyThemeColors()
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -426,7 +426,7 @@ private fun ProfileRow(
         Box(contentAlignment = Alignment.TopEnd) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
@@ -439,11 +439,16 @@ private fun ProfileRow(
                 Text(
                     text = name.take(1),
                     color = Color.White,
-                    fontSize = 23.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Black
                 )
             }
-            Text(text = "👑", fontSize = 16.sp, modifier = Modifier.offset(x = 2.dp, y = (-7).dp))
+            AppIconView(
+                icon = AppIcon.CROWN,
+                tint = GoldTop,
+                size = 16.dp,
+                modifier = Modifier.offset(x = 2.dp, y = (-7).dp)
+            )
         }
 
         Spacer(Modifier.width(10.dp))
@@ -451,14 +456,14 @@ private fun ProfileRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = name,
-                color = TextMain,
+                color = c.textPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Black,
                 maxLines = 1
             )
             Text(
                 text = "سطح $level",
-                color = TextDim,
+                color = c.textSecondary,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -468,7 +473,7 @@ private fun ProfileRow(
                     .fillMaxWidth(0.86f)
                     .height(7.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0xFF2B174E))
+                    .background(c.surfaceSoft)
                     .border(1.dp, Color(0xFF6A41B8).copy(alpha = 0.55f), RoundedCornerShape(50))
             ) {
                 Box(
@@ -485,68 +490,59 @@ private fun ProfileRow(
 
         Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(34.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF241142))
-                .border(1.dp, CardLine.copy(alpha = 0.6f), CircleShape)
+                .background(c.surface)
+                .border(1.dp, c.cardBorder.copy(alpha = 0.6f), CircleShape)
                 .clickable(onClick = onSettings),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "⚙", color = TextMain, fontSize = 17.sp)
+            AppIconView(icon = AppIcon.GEAR, tint = c.textSecondary, size = 17.dp)
         }
     }
 }
 
 @Composable
-private fun CurrencyRow(coins: Long, gems: Long, onAdd: () -> Unit) {
-    Row(
+private fun CurrencyRow(coins: Long, onAdd: () -> Unit) {
+    CurrencyPill(
+        icon = AppIcon.COIN,
+        value = formatNumber(coins),
+        tint = GoldTop,
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        CurrencyPill(
-            emoji = "🪙",
-            value = formatNumber(coins),
-            tint = GoldTop,
-            modifier = Modifier.weight(1f),
-            onAdd = onAdd
-        )
-        CurrencyPill(
-            emoji = "💎",
-            value = formatNumber(gems),
-            tint = Color(0xFFE38BFF),
-            modifier = Modifier.weight(1f),
-            onAdd = onAdd
-        )
-    }
+        onAdd = onAdd
+    )
 }
 
 @Composable
 private fun CurrencyPill(
-    emoji: String,
+    icon: AppIcon,
     value: String,
     tint: Color,
     modifier: Modifier = Modifier,
     onAdd: () -> Unit
 ) {
+    val c = joyThemeColors()
     Row(
         modifier = modifier
-            .height(38.dp)
+            .height(32.dp)
             .clip(RoundedCornerShape(50))
-            .background(Color(0xFF1A0B36))
+            .background(c.surface)
             .border(1.dp, tint.copy(alpha = 0.55f), RoundedCornerShape(50)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .padding(start = 5.dp)
-                .size(28.dp)
+                .size(24.dp)
                 .clip(CircleShape)
                 .background(Brush.radialGradient(listOf(tint, tint.copy(alpha = 0.55f)))),
             contentAlignment = Alignment.Center
-        ) { Text(text = emoji, fontSize = 14.sp) }
+        ) {
+            AppIconView(icon = icon, tint = c.onGold, size = 15.dp)
+        }
         Text(
             text = value,
-            color = TextMain,
+            color = c.textPrimary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Black,
             modifier = Modifier
@@ -557,12 +553,12 @@ private fun CurrencyPill(
         Box(
             modifier = Modifier
                 .padding(end = 4.dp)
-                .size(28.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .size(24.dp)
+                .clip(RoundedCornerShape(9.dp))
                 .background(Brush.verticalGradient(listOf(Color(0xFF9B4DFF), Color(0xFF5B20B0))))
                 .clickable(onClick = onAdd),
             contentAlignment = Alignment.Center
-        ) { Text(text = "+", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black) }
+        ) { Text(text = "+", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black) }
     }
 }
 
@@ -573,20 +569,21 @@ private fun EventRow(
     onDaily: () -> Unit,
     onLeague: () -> Unit
 ) {
+    val c = joyThemeColors()
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         EventCard(
-            emoji = "🎁",
+            icon = AppIcon.GIFT,
             title = "هدیه روزانه",
             subtitle = if (dailyAvailable) "آماده دریافت!" else "زنجیره: $streak روز",
-            accent = if (dailyAvailable) GoldTop else TextDim,
+            accent = if (dailyAvailable) GoldTop else c.textSecondary,
             modifier = Modifier.weight(1f),
             onClick = onDaily
         )
         EventCard(
-            emoji = "🏆",
+            icon = AppIcon.TROPHY,
             title = "لیگ هفتگی",
             subtitle = "جایزه هفته را بگیر",
             accent = Color(0xFF7DE3FF),
@@ -598,20 +595,21 @@ private fun EventRow(
 
 @Composable
 private fun EventCard(
-    emoji: String,
+    icon: AppIcon,
     title: String,
     subtitle: String,
     accent: Color,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val c = joyThemeColors()
     Row(
         modifier = modifier
-            .height(56.dp)
+            .height(46.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
-                    listOf(Color(0xFF25104A), Color(0xFF17082F))
+                    listOf(c.surface, c.surfaceSoft)
                 )
             )
             .border(1.dp, accent.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
@@ -619,13 +617,13 @@ private fun EventCard(
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = emoji, fontSize = 22.sp)
+        AppIconView(icon = icon, tint = accent, size = 20.dp)
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
-            Text(text = title, color = TextMain, fontSize = 11.sp, fontWeight = FontWeight.Black)
-            Text(text = subtitle, color = accent, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(text = title, color = c.textPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.Black)
+            Text(text = subtitle, color = accent, fontSize = 8.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
-        Text(text = "›", color = TextMain.copy(alpha = 0.8f), fontSize = 20.sp)
+        Text(text = "›", color = c.textPrimary.copy(alpha = 0.8f), fontSize = 20.sp)
     }
 }
 
@@ -645,6 +643,7 @@ private fun pressScale(interaction: MutableInteractionSource): Float {
 
 @Composable
 private fun LogoBlock() {
+    val c = joyThemeColors()
     val float = rememberInfiniteTransition(label = "logoFloat")
     val offset by float.animateFloat(
         initialValue = -3f,
@@ -661,13 +660,13 @@ private fun LogoBlock() {
             .graphicsLayer { translationY = offset.dp.toPx() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "👑", fontSize = 24.sp)
+        AppIconView(icon = AppIcon.CROWN, tint = GoldTop, size = 22.dp)
         Text(
             text = "BLOCK",
             style = TextStyle(
-                fontSize = 48.sp,
+                fontSize = 52.sp,
                 fontWeight = FontWeight.Black,
-                brush = Brush.verticalGradient(listOf(Color.White, Color(0xFFBFD8FF), Color(0xFF7C9BE8))),
+                brush = Brush.verticalGradient(listOf(c.textPrimary, c.emerald, c.emerald.copy(alpha = 0.75f))),
                 shadow = Shadow(color = Color(0xFF0B0620), offset = Offset(0f, 7f), blurRadius = 14f)
             ),
             letterSpacing = (-2).sp
@@ -675,18 +674,18 @@ private fun LogoBlock() {
         Text(
             text = "BOOM",
             style = TextStyle(
-                fontSize = 56.sp,
+                fontSize = 44.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(GoldTop, Color(0xFFFFC02E), GoldBottom)),
                 shadow = Shadow(color = Color(0xFF4A1600), offset = Offset(0f, 8f), blurRadius = 16f)
             ),
             letterSpacing = (-3).sp,
-            modifier = Modifier.offset(y = (-9).dp)
+            modifier = Modifier.offset(y = (-7).dp)
         )
         Text(
             text = "Shoot  •  Break  •  Win!",
-            color = ColorsSubtitle,
-            fontSize = 11.sp,
+            color = c.textSecondary,
+            fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
             modifier = Modifier.offset(y = (-8).dp)
@@ -726,7 +725,7 @@ private fun PlayButton(onClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .height(54.dp)
                 .graphicsLayer { scaleX = scale; scaleY = scale }
                 .shadow(18.dp, RoundedCornerShape(50), ambientColor = GoldBottom, spotColor = GoldBottom)
                 .clip(RoundedCornerShape(50))
@@ -737,12 +736,12 @@ private fun PlayButton(onClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "▶", color = Ink, fontSize = 24.sp)
+            AppIconView(icon = AppIcon.PLAY, tint = Ink, size = 22.dp, strokeWidth = 2.4.dp)
             Spacer(Modifier.width(12.dp))
             Text(
                 text = "بازی",
                 color = Ink,
-                fontSize = 27.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Black
             )
         }
@@ -765,35 +764,36 @@ private fun QuickActions(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        QuickTile("🛍", "فروشگاه", Modifier.weight(1f), onShop)
-        QuickTile("👑", "اسکین", Modifier.weight(1f), onSkins)
-        QuickTile("📋", "ماموریت", Modifier.weight(1f), onMissions, badge = true)
-        QuickTile("💎", "سکه رایگان", Modifier.weight(1f), onFreeCoins)
+        QuickTile(AppIcon.SHOP, "فروشگاه", Modifier.weight(1f), onShop)
+        QuickTile(AppIcon.CROWN, "اسکین", Modifier.weight(1f), onSkins)
+        QuickTile(AppIcon.MISSIONS, "ماموریت", Modifier.weight(1f), onMissions, badge = true)
+        QuickTile(AppIcon.GIFT, "سکه رایگان", Modifier.weight(1f), onFreeCoins)
     }
 }
 
 @Composable
 private fun QuickTile(
-    emoji: String,
+    icon: AppIcon,
     label: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     badge: Boolean = false
 ) {
+    val c = joyThemeColors()
     val interaction = remember { MutableInteractionSource() }
     val scale = pressScale(interaction)
     Column(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(18.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF2B1455), Color(0xFF150829))))
-            .border(1.dp, CardLine.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
+            .background(Brush.verticalGradient(listOf(c.surface, c.surfaceSoft)))
+            .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(vertical = 7.dp),
+            .padding(vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            Text(text = emoji, fontSize = 23.sp)
+            AppIconView(icon = icon, tint = c.emerald, size = 20.dp)
             if (badge) {
                 Box(
                     modifier = Modifier
@@ -808,7 +808,7 @@ private fun QuickTile(
         Spacer(Modifier.height(4.dp))
         Text(
             text = label,
-            color = TextMain,
+            color = c.textPrimary,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1
@@ -819,10 +819,7 @@ private fun QuickTile(
 @Composable
 private fun ModeGrid(onPick: (MenuMode) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            ModeCard(MenuMode.CLASSIC, Modifier.weight(1f)) { onPick(it) }
-            ModeCard(MenuMode.BOSS, Modifier.weight(1f)) { onPick(it) }
-        }
+        ModeCard(MenuMode.CLASSIC, Modifier.fillMaxWidth()) { onPick(it) }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             ModeCard(MenuMode.INFINITY, Modifier.weight(1f)) { onPick(it) }
             ModeCard(MenuMode.TIME_ATTACK, Modifier.weight(1f)) { onPick(it) }
@@ -840,7 +837,7 @@ private fun ModeCard(
     val scale = pressScale(interaction)
     Box(
         modifier = modifier
-            .height(94.dp)
+            .height(76.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
             .background(Brush.linearGradient(listOf(mode.top, mode.bottom)))
@@ -865,17 +862,17 @@ private fun ModeCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(46.dp)
+                    .size(38.dp)
                     .clip(RoundedCornerShape(15.dp))
                     .background(Color.Black.copy(alpha = 0.22f))
                     .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = mode.emoji,
-                    color = Color.White,
-                    fontSize = if (mode == MenuMode.INFINITY) 34.sp else 26.sp,
-                    fontWeight = FontWeight.Black
+                AppIconView(
+                    icon = mode.icon,
+                    tint = Color.White,
+                    size = if (mode == MenuMode.INFINITY) 30.dp else 24.dp,
+                    strokeWidth = 2.2.dp
                 )
             }
             Spacer(Modifier.width(10.dp))
@@ -885,7 +882,7 @@ private fun ModeCard(
                 Text(
                     text = mode.subtitleFa,
                     color = Color.White.copy(alpha = 0.82f),
-                    fontSize = 8.5.sp,
+                    fontSize = 9.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 2
                 )
@@ -907,62 +904,78 @@ private fun BottomNavV2(
     onSocial: () -> Unit,
     onMore: () -> Unit
 ) {
-    Row(
+    val c = joyThemeColors()
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF0B0620).copy(alpha = 0.97f))
-            .border(width = 1.dp, color = NeonPurple.copy(alpha = 0.25f))
-            .padding(vertical = 7.dp, horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 14.dp, vertical = 6.dp)
     ) {
-        NavItem("🏠", "خانه", active = true, onClick = onHome)
-        NavItem("📊", "آمار", onClick = onStats)
-        NavItem("🏆", "دستاورد", onClick = onAchievements, badge = true)
-        NavItem("👥", "اجتماعی", onClick = onSocial, badge = true)
-        NavItem("▦", "بیشتر", onClick = onMore)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(14.dp, RoundedCornerShape(28.dp), ambientColor = c.cardShadow, spotColor = c.cardShadow)
+                .clip(RoundedCornerShape(28.dp))
+                .background(c.surface)
+                .border(1.dp, c.cardBorder.copy(alpha = 0.65f), RoundedCornerShape(28.dp))
+                .padding(horizontal = 5.dp, vertical = 5.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NavItem(AppIcon.HOME, "خانه", active = true, onClick = onHome)
+            NavItem(AppIcon.CHART, "آمار", onClick = onStats)
+            NavItem(AppIcon.TROPHY, "دستاورد", onClick = onAchievements, badge = true)
+            NavItem(AppIcon.USER, "اجتماعی", onClick = onSocial, badge = true)
+            NavItem(AppIcon.MORE, "بیشتر", onClick = onMore)
+        }
     }
 }
 
 @Composable
 private fun NavItem(
-    emoji: String,
+    icon: AppIcon,
     label: String,
     active: Boolean = false,
     badge: Boolean = false,
     onClick: () -> Unit
 ) {
+    val c = joyThemeColors()
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(22.dp))
             .then(
                 if (active) {
                     Modifier
-                        .background(Brush.radialGradient(listOf(NeonPurple.copy(alpha = 0.35f), Color.Transparent)))
-                        .border(1.dp, NeonPurple.copy(alpha = 0.45f), RoundedCornerShape(14.dp))
+                        .background(c.emerald.copy(alpha = 0.12f))
+                        .border(1.dp, c.emerald.copy(alpha = 0.30f), RoundedCornerShape(22.dp))
                 } else Modifier
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            Text(text = emoji, fontSize = 18.sp)
+            AppIconView(
+                icon = icon,
+                tint = if (active) c.emerald else c.textSecondary,
+                size = 20.dp,
+                strokeWidth = 1.9.dp
+            )
             if (badge) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = 3.dp, y = (-2).dp)
+                        .offset(x = 4.dp, y = (-2).dp)
                         .size(7.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFF3B5C))
+                        .background(c.coral)
                 )
             }
         }
+        Spacer(Modifier.height(2.dp))
         Text(
             text = label,
-            color = if (active) GoldTop else TextDim,
-            fontSize = 8.5.sp,
+            color = if (active) c.textPrimary else c.textSecondary,
+            fontSize = 9.5.sp,
             fontWeight = if (active) FontWeight.Black else FontWeight.Medium,
             maxLines = 1
         )

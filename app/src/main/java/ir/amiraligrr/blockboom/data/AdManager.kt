@@ -560,6 +560,9 @@ private fun TapsellBanner(
     var retryCount by remember { mutableIntStateOf(0) }
     var noFillReported by remember { mutableStateOf(false) }
     var gaveUp by remember { mutableStateOf(false) }
+    // A blank 60dp band is worse than a house promo. Show the branded strip
+    // after a short fill wait, and replace it the moment a real creative lands.
+    var showHouse by remember { mutableStateOf(false) }
     val holder = remember { BannerViewHolder() }
 
     fun requestBanner() {
@@ -634,6 +637,15 @@ private fun TapsellBanner(
 
     // If the SDK neither fills nor errors, report the no-fill once so the
     // admin panel has a row instead of an unexplained empty band.
+    LaunchedEffect(loaded) {
+        if (loaded) {
+            showHouse = false
+            return@LaunchedEffect
+        }
+        delay(1_200L)
+        if (!loaded) showHouse = true
+    }
+
     LaunchedEffect(loaded, failed) {
         if (loaded || failed || noFillReported) return@LaunchedEffect
         delay(BANNER_FILL_TIMEOUT_MS)
@@ -752,7 +764,7 @@ private fun TapsellBanner(
             }
         )
 
-        if (gaveUp) {
+        if (!loaded && (showHouse || gaveUp)) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
