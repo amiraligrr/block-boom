@@ -253,6 +253,12 @@ fun HomeV2(
                     onFreeCoins = onFreeCoins
                 )
 
+                Spacer(Modifier.height(10.dp))
+                RecordSummaryCard(
+                    saveManager = saveManager,
+                    onLeaderboard = onLeaderboard
+                )
+
                 Spacer(Modifier.weight(1f))
                 ModeGrid(onPick = startFromMenu)
 
@@ -880,6 +886,62 @@ private fun ModeCard(
                 )
             }
             Text(text = "›", color = Color.White, fontSize = 22.sp)
+        }
+    }
+}
+
+@Composable
+private fun RecordSummaryCard(
+    saveManager: SaveManager,
+    onLeaderboard: () -> Unit,
+) {
+    val c = joyThemeColors()
+    val hasRecord = saveManager.recordBestLevel > 0 || saveManager.recordBestScore > 0
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(c.surface)
+            .border(1.dp, c.cardBorder.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+            .clickable(onClick = onLeaderboard)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppIconView(icon = AppIcon.TROPHY, tint = c.amber, size = 26.dp, strokeWidth = 2.dp)
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = "رکورد من",
+                color = c.textPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                maxLines = 1,
+            )
+            Text(
+                text = if (hasRecord) {
+                    "مرحله ${formatNumber(saveManager.recordBestLevel)}  •  ${formatNumber(saveManager.recordBestScore)} امتیاز"
+                } else {
+                    "هنوز رکوردی ثبت نشده — یک اجرای بی‌نهایت بازی کن"
+                },
+                color = c.textSecondary,
+                fontSize = 9.5.sp,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "🔥 ${formatNumber(saveManager.statBestCombo)}",
+                color = c.amber,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = "لیدربورد ‹",
+                color = c.textMuted,
+                fontSize = 8.5.sp,
+            )
         }
     }
 }
