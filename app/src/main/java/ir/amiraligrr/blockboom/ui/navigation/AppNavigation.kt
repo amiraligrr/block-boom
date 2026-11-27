@@ -51,6 +51,7 @@ import ir.amiraligrr.blockboom.data.AppConfigRepository
 import ir.amiraligrr.blockboom.data.GameMode
 import ir.amiraligrr.blockboom.data.PlayerSyncManager
 import ir.amiraligrr.blockboom.data.ProgressState
+import ir.amiraligrr.blockboom.data.RewardService
 import ir.amiraligrr.blockboom.ui.components.AccessBlockedScreen
 import ir.amiraligrr.blockboom.ui.screens.GameOverScreen
 import ir.amiraligrr.blockboom.ui.screens.GameScreen
@@ -65,6 +66,7 @@ import ir.amiraligrr.blockboom.ui.screens.UpgradeScreen
 import ir.amiraligrr.blockboom.ui.screens.InviteFriendsScreen
 import ir.amiraligrr.blockboom.ui.theme.joyThemeColors
 import ir.amiraligrr.blockboom.ui.v2.AchievementsScreen
+import ir.amiraligrr.blockboom.ui.v2.AnnouncementModal
 import ir.amiraligrr.blockboom.ui.v2.FreeCoinsScreen
 import ir.amiraligrr.blockboom.ui.v2.HomeV2
 import ir.amiraligrr.blockboom.ui.v2.MissionsScreen
@@ -99,7 +101,31 @@ fun AppNavigation() {
     var shopInitialTab by remember { mutableStateOf(0) }
 
     val context = LocalContext.current
-    val soundManager = (context.applicationContext as BlockBoomApp).soundManager
+    val app = context.applicationContext as BlockBoomApp
+    val soundManager = app.soundManager
+
+    // Announcements already fetched by BlockBoomApp. The old home had a
+    // one-off card and the V2 home had nothing, so a server announcement could
+    // be marked read and never shown. This is the missing queue: one modal at
+    // a time, explicit close, next item after that.
+    var announcementQueue by remember {
+        mutableStateOf<List<RewardService.Announcement>>(emptyList())
+    }
+    var currentAnnouncement by remember {
+        mutableStateOf<RewardService.Announcement?>(null)
+    }
+    val incomingAnnouncements by app.announcements.collectAsState()
+    LaunchedEffect(incomingAnnouncements) {
+        if (incomingAnnouncements.isNotEmpty()) {
+            announcementQueue = announcementQueue + app.consumeAnnouncements()
+        }
+    }
+    LaunchedEffect(announcementQueue, currentAnnouncement) {
+        if (currentAnnouncement == null && announcementQueue.isNotEmpty()) {
+            currentAnnouncement = announcementQueue.first()
+            announcementQueue = announcementQueue.drop(1)
+        }
+    }
 
     // Every "go home" exit funnels through here.
     //
@@ -565,6 +591,18 @@ fun AppNavigation() {
         }
     }
 
+    }
+
+    // Never interrupt a live run or the between-level upgrade with a modal;
+    // the queue is held until the player is back on a calm screen.
+    if (currentAnnouncement != null &&
+        route != Screen.Game.route &&
+        route != Screen.Upgrade.route
+    ) {
+        AnnouncementModal(
+            announcement = currentAnnouncement!!,
+            onClose = { currentAnnouncement = null }
+        )
     }
 }
 
