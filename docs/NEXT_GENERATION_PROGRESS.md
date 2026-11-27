@@ -38,3 +38,20 @@
 - Production purchase verification and referral defects require backend deployment and/or schema migration; source fixes only in this session.
 - Full data reset is intentionally not executed.
 - Low-end performance profiling requires the physical test device.
+
+---
+
+## Final status — 2026-11-27
+
+- Branch `next-generation` pushed to `origin`.
+- Working tree clean.
+- Release build: PASS (`:app:assembleMyketRelease`).
+- Unit/UI suite: 74/74 PASS.
+- PHP structural syntax: 37 files, 0 problems.
+- On-device install: blocked — `adb devices` empty.
+- Production deployment/migration/data reset: deliberately not executed.
+- Added: account XP + cloud mirror, adaptive no-scroll Home, low-RAM static
+  backdrop, mode-aware results, backend security fixes, additive schema
+  migration, economy design, Robolectric harness repair.
+- Next: device verification, mode result/reward completion, secondary screen
+  reskin, staging deployment of backend fixes.
