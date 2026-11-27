@@ -55,3 +55,19 @@
   migration, economy design, Robolectric harness repair.
 - Next: device verification, mode result/reward completion, secondary screen
   reskin, staging deployment of backend fixes.
+
+## 2026-11-27 — premium visual task + Deep Overhaul queue
+
+- Cinematic cold-start intro wired (real launcher icon, exact creator line,
+  process-scoped, skippable, reduced-motion/low-RAM variants).
+- HomeV2 is theme-aware; light mode no longer uses the dark background.
+- Home/nav icons use the vector AppIcon system; bottom nav is a rounded
+  floating iOS/Telegram-style bar.
+- Boss Fight removed from the menu; gems removed from UI and local save.
+- Game Over is compact and scroll-free; heart is visible immediately.
+- In-game header restored to the simpler preferred style.
+- Added HomeV2 light/dark smoke tests.
+- Full suite: 76/76 PASS. Release APK rebuilt.
+- Deep Overhaul audit (`docs/DEEP_OVERHAUL_AUDIT.md`) and phase queue
+  (`docs/DEEP_OVERHAUL_QUEUE.md`) created. Phase 2 is queued; no destructive
+  changes, migrations, or deployments performed.
