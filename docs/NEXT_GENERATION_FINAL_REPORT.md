@@ -108,8 +108,8 @@ Not run:
 ## 6. Build status
 
 - Release APK: `app/build/outputs/apk/myket/release/app-myket-release.apk`
-- Size: 13,079,338 bytes
-- Built: 2026-11-27 11:27
+- Size: 13,079,374 bytes
+- Built: 2026-11-27 12:02
 - Version remains `1.2.0 (25)`.
 - No AAB or store upload was produced.
 
