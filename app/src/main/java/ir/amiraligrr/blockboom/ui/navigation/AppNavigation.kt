@@ -50,6 +50,8 @@ import ir.amiraligrr.blockboom.data.AdSlot
 import ir.amiraligrr.blockboom.data.AppConfigRepository
 import ir.amiraligrr.blockboom.data.GameMode
 import ir.amiraligrr.blockboom.data.PlayerSyncManager
+import ir.amiraligrr.blockboom.data.NewsItem
+import ir.amiraligrr.blockboom.data.NewsManager
 import ir.amiraligrr.blockboom.data.ProgressState
 import ir.amiraligrr.blockboom.data.RewardService
 import ir.amiraligrr.blockboom.ui.components.AccessBlockedScreen
@@ -70,6 +72,7 @@ import ir.amiraligrr.blockboom.ui.v2.AnnouncementModal
 import ir.amiraligrr.blockboom.ui.v2.FreeCoinsScreen
 import ir.amiraligrr.blockboom.ui.v2.HomeV2
 import ir.amiraligrr.blockboom.ui.v2.MissionsScreen
+import ir.amiraligrr.blockboom.ui.v2.NewsScreen
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
@@ -86,6 +89,7 @@ sealed class Screen(val route: String) {
     data object Missions : Screen("missions")
     data object Achievements : Screen("achievements")
     data object FreeCoins : Screen("free_coins")
+    data object News : Screen("news")
 }
 
 @Composable
@@ -114,15 +118,14 @@ fun AppNavigation() {
     var currentAnnouncement by remember {
         mutableStateOf<RewardService.Announcement?>(null)
     }
-    var latestNews by remember {
-        mutableStateOf<RewardService.Announcement?>(null)
+    var newsItems by remember { mutableStateOf<List<NewsItem>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        newsItems = NewsManager.fetchNews(context)
     }
     val incomingAnnouncements by app.announcements.collectAsState()
     LaunchedEffect(incomingAnnouncements) {
         if (incomingAnnouncements.isNotEmpty()) {
-            val consumed = app.consumeAnnouncements()
-            latestNews = consumed.firstOrNull() ?: latestNews
-            announcementQueue = announcementQueue + consumed
+            announcementQueue = announcementQueue + app.consumeAnnouncements()
         }
     }
     LaunchedEffect(announcementQueue, currentAnnouncement) {
@@ -454,8 +457,12 @@ fun AppNavigation() {
                 },
                 onDailyReward = { },
                 onExit = { activity?.finish() },
-                news = latestNews,
-                onNews = { latestNews?.let { currentAnnouncement = it } }
+                news = newsItems.firstOrNull(),
+                onNews = {
+                    if (newsItems.isNotEmpty()) {
+                        navController.navigate(Screen.News.route) { launchSingleTop = true }
+                    }
+                }
             )
         }
         composable(Screen.Game.route) {
@@ -592,6 +599,17 @@ fun AppNavigation() {
         composable(Screen.FreeCoins.route) {
             FreeCoinsScreen(
                 saveManager = rememberSaveManager(),
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.News.route) {
+            // Re-fetch whenever the reader opens so a freshly published item
+            // appears without restarting the app.
+            LaunchedEffect(Unit) {
+                newsItems = NewsManager.fetchNews(context)
+            }
+            NewsScreen(
+                news = newsItems,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -117,3 +117,36 @@
   rewarded remain; no interstitial zone is configured, so none was faked.
 - Full suite: 81/81 PASS. Release APK rebuilt with --rerun-tasks.
 - Device disconnected; the final two-mode build could not be installed.
+
+## 2026-11-28 — real news system + final one-screen Home
+
+- Added a real game-news system:
+  - `api/news.php` returns only published items, with `?id=` for one item.
+  - `admin/news.php` is the only writer: create, edit, publish/unpublish,
+    delete, with CSRF, length limits and escaped output.
+  - `admin/layout.php` now links the news page.
+  - Additive migration `api/migrations/2026_11_28_news.sql`; it was **not**
+    executed by this session and can be rolled back with `DROP TABLE news`.
+  - App: `NewsManager` fetches, `NewsScreen` swipes between items with page
+    dots, scrolls long bodies and loads an optional remote image. The Home
+    news card opens the reader; drafts never reach the app.
+- Support: `from_admin` now accepts Boolean, 0/1 and yes/no; both speaker
+  labels render. Added parser tests so an admin reply cannot regress into a
+  player bubble.
+- Home final layout:
+  - One 820dp composition including quick actions, news and bottom nav,
+    scaled exactly to the NavHost so there is no dead band and no scroll.
+  - Top-aligned overflow keeps the profile row below the 60dp ad banner on
+    short screens (AnimatedVisibility was centring the oversized content).
+  - Mode cards 168dp with subtitles; quick actions 104dp; event cards 88dp;
+    larger labels; Home clipped to its own bounds so no falling cube can
+    cover the ad.
+  - Removed the detached crown base line that rendered as a stray stroke.
+  - Light/dark smoke tests now pin the same RTL layout direction the app uses.
+- Online gate: added an explicit “ادامه با اطلاعات محلی” path; sync and the
+  leaderboard stay unavailable until the domestic API answers.
+- Full suite: 90/90 PASS. Release APK rebuilt and installed on the Xiaomi
+  test device; final Home verified with a live top banner.
+- Not verified on-device: Infinity run, support thread with a real admin
+  reply, News reader via UI (touch injection is blocked by MIUI). Their
+  logic is covered by tests.

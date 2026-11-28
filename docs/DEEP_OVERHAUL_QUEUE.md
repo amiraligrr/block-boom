@@ -42,7 +42,7 @@ It is complete when:
 | 9 | Real boss fights with phases/mechanics/rewards | 3,4 | QUEUED |
 | 10 | Lucky Wheel with server-side last-spin protection | 8,11 | QUEUED |
 | 11 | Online infrastructure: real connectivity check, account sync, idempotent scores/purchases | 1 | QUEUED |
-| 12 | News system + admin CRUD/scheduling/pages | 11,14 | QUEUED |
+| 12 | News system + admin CRUD/scheduling/pages | 11,14 | PARTIAL — API/admin CRUD, in-app swipe reader and Home card done; scheduling/pagination not yet |
 | 13 | Modal notification queue + read receipts + targeting | 11,14 | QUEUED |
 | 14 | Admin panel overhaul: content, game, economy, players, system, security | 11 | QUEUED |
 | 15 | Ads/monetization audit: standard Tapsell only, no Plus, remembered caps | 8,11 | PARTIAL — banner+rewarded preserved; no interstitial zone configured |
@@ -75,3 +75,6 @@ It is complete when:
 
 - 2026-11-27: queue created; visual task completed in working tree and release
   build generated. Deep Overhaul not started yet.
+- 2026-11-28: Phase 12 basic news loop shipped (published-only API, admin
+  create/edit/publish/delete, swipe reader, Home card). Migration written but
+  not executed. Home rebuilt as one scaled composition; 90/90 tests pass.

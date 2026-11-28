@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
@@ -58,6 +59,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -68,7 +71,7 @@ import androidx.compose.ui.unit.sp
 import ir.amiraligrr.blockboom.R
 import ir.amiraligrr.blockboom.data.GameMode
 import ir.amiraligrr.blockboom.data.LivesManager
-import ir.amiraligrr.blockboom.data.RewardService
+import ir.amiraligrr.blockboom.data.NewsItem
 import ir.amiraligrr.blockboom.data.SaveManager
 import ir.amiraligrr.blockboom.ui.dialogs.NoLivesDialog
 import ir.amiraligrr.blockboom.ui.screens.DailyRewardDialog
@@ -129,7 +132,7 @@ fun HomeV2(
     onMore: () -> Unit,
     onDailyReward: () -> Unit,
     onExit: () -> Unit,
-    news: RewardService.Announcement? = null,
+    news: NewsItem? = null,
     onNews: () -> Unit = {},
 ) {
     var showNoLives by remember { mutableStateOf(false) }
@@ -186,11 +189,29 @@ fun HomeV2(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .clipToBounds()
             .background(Brush.verticalGradient(listOf(c.backgroundTop, c.backgroundMid, c.backgroundBottom)))
     ) {
         NeonMenuBackdrop()
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            // One single-screen composition. The design height is the sum of
+            // every section including the bottom navigation, so nothing is
+            // clipped and no section is left floating in dead space. On a
+            // shorter phone the whole block scales down uniformly; on a taller
+            // one it stretches and SpaceEvenly distributes the extra room.
+            // The design is a fixed 820dp composition, scaled to the exact
+            // height the NavHost gives Home. Scaling up on tall screens means
+            // the buttons grow instead of leaving a dead band at the bottom;
+            // scaling down on short ones keeps every section on screen with
+            // no scroll. The custom layout below lets that oversized child
+            // start at the top instead of being centred under the ad banner.
+            val designHeight = 820.dp
+            val scale = (maxHeight / designHeight).coerceIn(0.62f, 1f)
+            // At scale 1 the composition stretches to the real height instead
+            // of leaving a dead band at the bottom on tall phones.
+            val contentHeight = if (scale >= 0.999f) maxHeight else designHeight
+
             AnimatedVisibility(
                 visible = entered,
                 enter = fadeIn(tween(420, easing = FastOutSlowInEasing)) +
@@ -198,91 +219,89 @@ fun HomeV2(
                         animationSpec = tween(420, easing = FastOutSlowInEasing),
                         initialOffsetY = { it / 12 }
                     ),
-                modifier = Modifier.weight(1f).fillMaxWidth()
+                modifier = Modifier.fillMaxSize()
             ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                // The menu is a single-screen composition. On a short phone
-                // the fixed design height would clip the mode cards, so scale
-                // the whole content block instead of introducing a scrollbar
-                // the reference does not have.
-                val designHeight = 760.dp
-                val scale = ((maxHeight * 0.94f) / designHeight).coerceIn(0.56f, 1f)
+                TopAlignedOverflow {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(if (scale >= 0.999f) maxHeight else maxHeight / scale)
+                        .height(contentHeight)
                         .graphicsLayer {
                             scaleX = scale
                             scaleY = scale
                             transformOrigin = TransformOrigin(0.5f, 0f)
                         }
                         .padding(horizontal = 16.dp)
+                        .padding(top = 20.dp, bottom = 6.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                Spacer(Modifier.height(4.dp))
-                ProfileRow(
-                    name = saveManager.playerName.ifBlank { "بازیکن" },
-                    level = saveManager.accountLevel(),
-                    xpProgress = saveManager.xpProgress(),
-                    onSettings = onSettings
-                )
-                Spacer(Modifier.height(8.dp))
-                CurrencyRow(
-                    coins = saveManager.coins,
-                    onAdd = onShop
-                )
-                Spacer(Modifier.height(8.dp))
-                EventRow(
-                    dailyAvailable = saveManager.isDailyRewardAvailable(),
-                    streak = saveManager.dailyStreak,
-                    onDaily = {
-                        if (saveManager.isDailyRewardAvailable()) showDaily = true else onDailyReward()
-                    },
-                    onAchievements = onAchievements
-                )
+                    ProfileRow(
+                        name = saveManager.playerName.ifBlank { "بازیکن" },
+                        level = saveManager.accountLevel(),
+                        xpProgress = saveManager.xpProgress(),
+                        onSettings = onSettings
+                    )
+                    CurrencyRow(
+                        coins = saveManager.coins,
+                        onAdd = onShop
+                    )
+                    EventRow(
+                        dailyAvailable = saveManager.isDailyRewardAvailable(),
+                        streak = saveManager.dailyStreak,
+                        onDaily = {
+                            if (saveManager.isDailyRewardAvailable()) showDaily = true else onDailyReward()
+                        },
+                        onAchievements = onAchievements
+                    )
+                    LogoBlock()
+                    ModeGrid(onPick = startFromMenu)
 
-                Spacer(Modifier.height(10.dp))
-                LogoBlock()
-                Spacer(Modifier.height(8.dp))
+                    if (dailyClaimed != null) {
+                        Text(
+                            text = "+${formatNumber(dailyClaimed!!)} سکه به حسابت اضافه شد",
+                            color = GoldTop,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                Spacer(Modifier.height(10.dp))
-                ModeGrid(onPick = startFromMenu)
-
-                Spacer(Modifier.height(10.dp))
-                QuickActions(
-                    onShop = onShop,
-                    onSkins = onSkins,
-                    onMissions = onMissions,
-                    onFreeCoins = onFreeCoins
-                )
-
-
-                if (dailyClaimed != null) {
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = "🎁 +${formatNumber(dailyClaimed!!)} سکه به حسابت اضافه شد",
-                        color = GoldTop,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
+                    QuickActions(
+                        onShop = onShop,
+                        onSkins = onSkins,
+                        onMissions = onMissions,
+                        onFreeCoins = onFreeCoins
+                    )
+                    NewsCard(news = news, onNews = onNews)
+                    BottomNavV2(
+                        onHome = { },
+                        onStats = onStats,
+                        onLeaderboard = onLeaderboard,
+                        onSocial = onSocial,
+                        onMore = onMore
                     )
                 }
-
-                Spacer(Modifier.height(8.dp))
                 }
             }
-            }
+        }
+    }
+}
 
-            NewsCard(news = news, onNews = onNews)
-            Spacer(Modifier.height(6.dp))
-
-            BottomNavV2(
-                onHome = { },
-                onStats = onStats,
-                onLeaderboard = onLeaderboard,
-                onSocial = onSocial,
-                onMore = onMore
-            )
+/**
+ * Measures its child at its natural (possibly taller-than-parent) height and
+ * pins it to the top, then reports the parent's size. AnimatedVisibility
+ * otherwise centres an oversized child, which lifted the Home profile under
+ * the top banner on short screens.
+ */
+@Composable
+private fun TopAlignedOverflow(content: @Composable () -> Unit) {
+    Layout(content = content, modifier = Modifier.fillMaxSize()) { measurables, constraints ->
+        val placeable = measurables.first().measure(
+            constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity)
+        )
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            placeable.place(0, 0)
         }
     }
 }
@@ -611,7 +630,7 @@ private fun EventCard(
     val c = joyThemeColors()
     Row(
         modifier = modifier
-            .height(76.dp)
+            .height(88.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
@@ -623,14 +642,14 @@ private fun EventCard(
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AppIconView(icon = icon, tint = accent, size = 28.dp)
-        Spacer(Modifier.width(8.dp))
+        AppIconView(icon = icon, tint = accent, size = 32.dp, strokeWidth = 2.1.dp)
+        Spacer(Modifier.width(9.dp))
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, color = c.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
-            Text(text = subtitle, color = accent, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center)
+            Text(text = title, color = c.textPrimary, fontSize = 16.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+            Text(text = subtitle, color = accent, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center)
         }
         Text(text = "›", color = c.textPrimary.copy(alpha = 0.8f), fontSize = 20.sp)
     }
@@ -672,7 +691,7 @@ private fun LogoBlock() {
         Text(
             text = "BLOCK",
             style = TextStyle(
-                fontSize = 36.sp,
+                fontSize = 40.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(c.textPrimary, c.emerald, c.emerald.copy(alpha = 0.75f))),
                 shadow = Shadow(color = Color(0xFF0B0620), offset = Offset(0f, 7f), blurRadius = 14f)
@@ -682,7 +701,7 @@ private fun LogoBlock() {
         Text(
             text = "BOOM",
             style = TextStyle(
-                fontSize = 30.sp,
+                fontSize = 33.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(GoldTop, Color(0xFFFFC02E), GoldBottom)),
                 shadow = Shadow(color = Color(0xFF4A1600), offset = Offset(0f, 8f), blurRadius = 16f)
@@ -770,7 +789,7 @@ private fun QuickActions(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         QuickTile(AppIcon.SHOP, "فروشگاه", Modifier.weight(1f), onShop)
         QuickTile(AppIcon.CROWN, "اسکین", Modifier.weight(1f), onSkins)
@@ -793,16 +812,16 @@ private fun QuickTile(
     Column(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .height(86.dp)
-            .clip(RoundedCornerShape(18.dp))
+            .height(104.dp)
+            .clip(RoundedCornerShape(20.dp))
             .background(Brush.verticalGradient(listOf(c.surface, c.surfaceSoft)))
-            .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
+            .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(20.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(vertical = 10.dp),
+            .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            AppIconView(icon = icon, tint = c.emerald, size = 26.dp)
+            AppIconView(icon = icon, tint = c.emerald, size = 32.dp, strokeWidth = 2.1.dp)
             if (badge) {
                 Box(
                     modifier = Modifier
@@ -814,11 +833,11 @@ private fun QuickTile(
                 )
             }
         }
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
             text = label,
             color = c.textPrimary,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             textAlign = TextAlign.Center
@@ -828,9 +847,12 @@ private fun QuickTile(
 
 @Composable
 private fun ModeGrid(onPick: (MenuMode) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        ModeCard(MenuMode.CLASSIC, Modifier.fillMaxWidth()) { onPick(it) }
-        ModeCard(MenuMode.INFINITY, Modifier.fillMaxWidth()) { onPick(it) }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        ModeCard(MenuMode.CLASSIC, Modifier.weight(1f)) { onPick(it) }
+        ModeCard(MenuMode.INFINITY, Modifier.weight(1f)) { onPick(it) }
     }
 }
 
@@ -844,9 +866,9 @@ private fun ModeCard(
     val scale = pressScale(interaction)
     Box(
         modifier = modifier
-            .height(84.dp)
+            .height(168.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(26.dp))
             .background(Brush.linearGradient(listOf(mode.top, mode.bottom)))
             .border(1.5.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(22.dp))
             .clickable(interactionSource = interaction, indication = null) { onClick(mode) }
@@ -871,15 +893,24 @@ private fun ModeCard(
             AppIconView(
                 icon = mode.icon,
                 tint = Color.White,
-                size = if (mode == MenuMode.INFINITY) 34.dp else 30.dp,
-                strokeWidth = 2.2.dp
+                size = if (mode == MenuMode.INFINITY) 46.dp else 42.dp,
+                strokeWidth = 2.4.dp
             )
-            Spacer(Modifier.height(3.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 text = mode.titleFa,
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = 23.sp,
                 fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = mode.subtitleFa,
+                color = Color.White.copy(alpha = 0.82f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )
@@ -890,14 +921,14 @@ private fun ModeCard(
 
 @Composable
 private fun NewsCard(
-    news: RewardService.Announcement?,
+    news: NewsItem?,
     onNews: () -> Unit,
 ) {
     val c = joyThemeColors()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(70.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(c.surface)
             .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
@@ -911,7 +942,7 @@ private fun NewsCard(
             Text(
                 text = "اخبار بازی",
                 color = c.textPrimary,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Black,
                 maxLines = 1,
             )
@@ -919,7 +950,7 @@ private fun NewsCard(
                 text = news?.title?.takeIf { it.isNotBlank() }
                     ?: "برای لیدربورد، حالت بی‌نهایت را بازی کن",
                 color = c.textSecondary,
-                fontSize = 9.5.sp,
+                fontSize = 11.5.sp,
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
@@ -944,9 +975,7 @@ private fun BottomNavV2(
 ) {
     val c = joyThemeColors()
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -995,8 +1024,8 @@ private fun NavItem(
             AppIconView(
                 icon = icon,
                 tint = if (active) c.emerald else c.textSecondary,
-                size = 24.dp,
-                strokeWidth = 1.9.dp
+                size = 26.dp,
+                strokeWidth = 2.dp
             )
             if (badge) {
                 Box(
@@ -1013,7 +1042,7 @@ private fun NavItem(
         Text(
             text = label,
             color = if (active) c.textPrimary else c.textSecondary,
-            fontSize = 11.5.sp,
+            fontSize = 12.5.sp,
             fontWeight = if (active) FontWeight.Black else FontWeight.Medium,
             maxLines = 1
         )

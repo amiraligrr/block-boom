@@ -1,9 +1,12 @@
 package ir.amiraligrr.blockboom
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
+import androidx.compose.ui.unit.LayoutDirection
 import ir.amiraligrr.blockboom.data.LivesManager
 import ir.amiraligrr.blockboom.data.SaveManager
 import ir.amiraligrr.blockboom.ui.theme.BlockBoomTheme
@@ -32,8 +35,9 @@ class HomeV2SmokeTest {
         val save = SaveManager(context)
         val lives = LivesManager(save)
         compose.setContent {
-            BlockBoomTheme(darkMode = dark) {
-                HomeV2(
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                BlockBoomTheme(darkMode = dark) {
+                    HomeV2(
                     saveManager = save,
                     livesManager = lives,
                     onPlayMode = {},
@@ -48,8 +52,9 @@ class HomeV2SmokeTest {
                     onSocial = {},
                     onMore = {},
                     onDailyReward = {},
-                    onExit = {},
-                )
+                        onExit = {},
+                    )
+                }
             }
         }
     }

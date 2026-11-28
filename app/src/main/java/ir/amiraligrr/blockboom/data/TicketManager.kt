@@ -105,7 +105,7 @@ object TicketManager {
      * silently read as "player" and every admin reply rendered as the user's
      * own bubble. Accept all three encodings.
      */
-    private fun parseBool(value: Any?): Boolean = when (value) {
+    internal fun parseBool(value: Any?): Boolean = when (value) {
         null -> false
         is Boolean -> value
         is Number -> value.toInt() != 0

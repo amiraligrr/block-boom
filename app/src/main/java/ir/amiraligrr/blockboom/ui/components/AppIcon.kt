@@ -442,7 +442,9 @@ private fun DrawScope.drawAppIcon(icon: AppIcon, tint: Color, stroke: Float) {
                     close()
                 }, tint, style = strokeStyle
             )
-            drawPath(p(x(3.8f), y(21f), x(20.2f), y(21f)), tint, style = strokeStyle)
+            // The base is part of the closed outline above. A second
+            // free-standing line looked detached on some renderers, so the
+            // crown is drawn with one path only.
             drawCircle(tint, u * 0.85f, Offset(x(12f), y(8.2f)))
         }
 

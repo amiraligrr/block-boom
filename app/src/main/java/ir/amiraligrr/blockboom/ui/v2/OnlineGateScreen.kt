@@ -36,6 +36,7 @@ import ir.amiraligrr.blockboom.ui.theme.joyThemeColors
 fun OnlineGateScreen(
     status: GateStatus,
     onRetry: () -> Unit,
+    onContinueOffline: () -> Unit = {},
 ) {
     val c = joyThemeColors()
     Box(
@@ -124,6 +125,23 @@ fun OnlineGateScreen(
                     borderColor = c.emerald.copy(alpha = 0.5f),
                     contentColor = c.onPrimary,
                     icon = AppIcon.BOLT,
+                )
+                Spacer(Modifier.height(10.dp))
+                NeonButton(
+                    text = "ادامه با اطلاعات محلی",
+                    onClick = onContinueOffline,
+                    modifier = Modifier.fillMaxWidth(),
+                    size = ButtonSize.Medium,
+                    containerColor = c.surface,
+                    borderColor = c.cardBorder,
+                    contentColor = c.textPrimary,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "در این حالت لیدربورد و همگام‌سازی تا وصل‌شدن سرور غیرفعال است.",
+                    color = c.textMuted,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center,
                 )
             }
         }

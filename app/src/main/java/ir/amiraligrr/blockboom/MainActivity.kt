@@ -89,6 +89,12 @@ class MainActivity : ComponentActivity() {
                                         gateStatus = GateStatus.CHECKING
                                         gateStatus = OnlineGate.check(applicationContext)
                                     }
+                                },
+                                onContinueOffline = {
+                                    // Server/sync is unavailable, but local play
+                                    // must remain possible. The app's own gate
+                                    // still enforces bans/versions when it can.
+                                    gateStatus = GateStatus.ONLINE
                                 }
                             )
                         }

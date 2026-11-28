@@ -24,6 +24,7 @@ const ADMIN_NAV = [
     'ads'         => ['ads.php',        'fas fa-chart-bar',    'آمار تبلیغات'],
     'tickets'     => ['tickets.php',    'fas fa-life-ring',     'تیکت‌ها'],
     'notifications' => ['notifications.php', 'fas fa-bell',      'اعلان‌ها'],
+    'news'        => ['news.php',        'fas fa-newspaper',   'اخبار'],
     // Named integrity.php, not anticheat.php: the API's root .htaccess blocks
     // any file whose basename is "anticheat.php" (it's a library there), and
     // <FilesMatch> matches the basename at every directory depth — so the
