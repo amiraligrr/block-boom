@@ -32,10 +32,10 @@ It is complete when:
 | Phase | Scope | Depends on | Status |
 |---|---|---|---|
 | 1 | Deep audit: engine, modes, economy, backend, admin, ads, content | — | QUEUED |
-| 2 | Foundational architecture: two canonical modes (Stage/Ranked), remove duplicate mode paths, online gate | 1 | QUEUED |
+| 2 | Foundational architecture: two canonical modes (Stage/Ranked), remove duplicate mode paths, online gate | 1 | PARTIAL — online gate done; Time Attack retired; Classic+Infinity only |
 | 3 | Main ball redesign: body/wheels/skins/hitbox-safe animation | 2 | QUEUED |
-| 4 | Stage + Ranked completion, independent records | 2 | QUEUED |
-| 5 | Adaptive Ranked difficulty from DPS/build/performance | 4 | QUEUED |
+| 4 | Stage + Ranked completion, independent records | 2 | PARTIAL — Infinity is continuous and auto-advancing; record board still legacy |
+| 5 | Adaptive Ranked difficulty from DPS/build/performance | 4 | PARTIAL — build/time pressure wired; needs on-device tuning |
 | 6 | Blocks and environment: silhouettes, damage, backgrounds, random non-repeating free backgrounds | 3 | QUEUED |
 | 7 | Power-ups: Mini Orb, Overdrive, Shockwave, Magnet, Shield, Multi Shot, Time Warp | 3 | QUEUED |
 | 8 | Upgrade/economy rebalance + XP/Gems sources and sinks | 4 | QUEUED |
@@ -45,8 +45,8 @@ It is complete when:
 | 12 | News system + admin CRUD/scheduling/pages | 11,14 | QUEUED |
 | 13 | Modal notification queue + read receipts + targeting | 11,14 | QUEUED |
 | 14 | Admin panel overhaul: content, game, economy, players, system, security | 11 | QUEUED |
-| 15 | Ads/monetization audit: frequency, rewarded integrity, no duplicate rewards | 8,11 | QUEUED |
-| 16 | Startup animation/boot sequence + real status messages | 11,17 | QUEUED |
+| 15 | Ads/monetization audit: standard Tapsell only, no Plus, remembered caps | 8,11 | PARTIAL — banner+rewarded preserved; no interstitial zone configured |
+| 16 | Startup animation/boot sequence + real status messages | 11,17 | PARTIAL — cold-start intro + online gate done |
 | 17 | Integration/regression tests, low-end performance, release APK | all | QUEUED |
 | 18 | Final release report, migration verification, versionCode 26 decision | 17 | QUEUED |
 

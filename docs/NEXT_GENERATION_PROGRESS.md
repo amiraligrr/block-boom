@@ -103,3 +103,17 @@
   device locking/sleeping.
 - Phase 2 remains partially complete: account-sync gating and Stage/Ranked
   consolidation are still pending. No DB/migration/deploy changes.
+
+## 2026-11-28 — two-mode Infinity / large-action pass
+
+- Time Attack removed from enum, engine, HUD and result flow.
+- Infinity now auto-advances without wave numbers or a wave-complete card.
+- Added build/time pressure to Infinity (strong builds are challenged early;
+  normal run targets roughly 90 seconds; not yet tuned on-device).
+- Home: Play button removed; two large Classic/Infinity buttons.
+- Achievements moved into the former weekly-league slot; leaderboard moved to
+  the bottom navigation; quick actions and bottom nav enlarged.
+- Tapsell decision recorded: standard SDK only, no Tapsell Plus. Banner and
+  rewarded remain; no interstitial zone is configured, so none was faked.
+- Full suite: 81/81 PASS. Release APK rebuilt with --rerun-tasks.
+- Device disconnected; the final two-mode build could not be installed.
