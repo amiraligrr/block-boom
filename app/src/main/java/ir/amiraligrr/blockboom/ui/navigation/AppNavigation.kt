@@ -462,8 +462,7 @@ fun AppNavigation() {
                     // campaign gets the upgrade breather between levels.
                     when (gameViewModel.engine.mode) {
                         GameMode.RECORD,
-                        GameMode.BOSS,
-                        GameMode.TIME_ATTACK -> gameViewModel.startNextLevel()
+                        GameMode.BOSS -> gameViewModel.startNextLevel()
                         GameMode.STAGE -> navController.navigate(Screen.Upgrade.route) {
                             launchSingleTop = true
                         }

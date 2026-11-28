@@ -55,7 +55,7 @@ class HomeV2SmokeTest {
         compose.onNodeWithText("BLOCK").assertExists()
         compose.onNodeWithText("کلاسیک").assertExists()
         compose.onNodeWithText("بی‌نهایت").assertExists()
-        compose.onNodeWithText("حمله زمانی").assertExists()
+        compose.onNodeWithText("لیدربورد").assertExists()
         compose.onNodeWithText("فروشگاه").assertExists()
     }
 

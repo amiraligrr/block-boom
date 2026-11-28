@@ -107,9 +107,8 @@ enum class MenuMode(
     val top: Color,
     val bottom: Color,
 ) {
-    CLASSIC("کلاسیک", "حالت اصلی بازی", AppIcon.TARGET, Color(0xFF2D7BFF), Color(0xFF0B2E8C)),
-    INFINITY("بی‌نهایت", "بدون محدودیت", AppIcon.INFINITY, Color(0xFF35E08B), Color(0xFF0B6B3A)),
-    TIME_ATTACK("حمله زمانی", "۶۰ ثانیه، بیشترین امتیاز", AppIcon.TIMER, Color(0xFFFF8A2A), Color(0xFF9C2A05)),
+    CLASSIC("کلاسیک", "مراحل و پیشرفت", AppIcon.TARGET, Color(0xFF2D7BFF), Color(0xFF0B2E8C)),
+    INFINITY("بی‌نهایت", "رکورد و لیدربورد", AppIcon.INFINITY, Color(0xFF35E08B), Color(0xFF0B6B3A)),
 }
 
 @Composable
@@ -152,7 +151,6 @@ fun HomeV2(
             when (menu) {
                 MenuMode.CLASSIC -> GameMode.STAGE
                 MenuMode.INFINITY -> GameMode.RECORD
-                MenuMode.TIME_ATTACK -> GameMode.TIME_ATTACK
             }
         )
     }
@@ -236,14 +234,12 @@ fun HomeV2(
                     onDaily = {
                         if (saveManager.isDailyRewardAvailable()) showDaily = true else onDailyReward()
                     },
-                    onLeague = onLeaderboard
+                    onAchievements = onAchievements
                 )
 
                 Spacer(Modifier.height(10.dp))
                 LogoBlock()
                 Spacer(Modifier.height(8.dp))
-
-                PlayButton { startFromMenu(MenuMode.CLASSIC) }
 
                 Spacer(Modifier.height(10.dp))
                 ModeGrid(onPick = startFromMenu)
@@ -277,7 +273,7 @@ fun HomeV2(
             BottomNavV2(
                 onHome = { },
                 onStats = onStats,
-                onAchievements = onAchievements,
+                onLeaderboard = onLeaderboard,
                 onSocial = onSocial,
                 onMore = onMore
             )
@@ -425,7 +421,7 @@ private fun ProfileRow(
         Box(contentAlignment = Alignment.TopEnd) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
@@ -459,7 +455,7 @@ private fun ProfileRow(
             Text(
                 text = name,
                 color = c.textPrimary,
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Black,
                 maxLines = 1,
                 textAlign = TextAlign.Center
@@ -467,7 +463,7 @@ private fun ProfileRow(
             Text(
                 text = "سطح $level",
                 color = c.textSecondary,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
@@ -494,7 +490,7 @@ private fun ProfileRow(
 
         Box(
             modifier = Modifier
-                .size(34.dp)
+                .size(42.dp)
                 .clip(CircleShape)
                 .background(c.surface)
                 .border(1.dp, c.cardBorder.copy(alpha = 0.6f), CircleShape)
@@ -528,7 +524,7 @@ private fun CurrencyPill(
     val c = joyThemeColors()
     Row(
         modifier = modifier
-            .height(32.dp)
+            .height(36.dp)
             .clip(RoundedCornerShape(50))
             .background(c.surface)
             .border(1.dp, tint.copy(alpha = 0.55f), RoundedCornerShape(50)),
@@ -537,7 +533,7 @@ private fun CurrencyPill(
         Box(
             modifier = Modifier
                 .padding(start = 5.dp)
-                .size(24.dp)
+                .size(28.dp)
                 .clip(CircleShape)
                 .background(Brush.radialGradient(listOf(tint, tint.copy(alpha = 0.55f)))),
             contentAlignment = Alignment.Center
@@ -557,12 +553,12 @@ private fun CurrencyPill(
         Box(
             modifier = Modifier
                 .padding(end = 4.dp)
-                .size(24.dp)
-                .clip(RoundedCornerShape(9.dp))
+                .size(30.dp)
+                .clip(RoundedCornerShape(10.dp))
                 .background(Brush.verticalGradient(listOf(Color(0xFF9B4DFF), Color(0xFF5B20B0))))
                 .clickable(onClick = onAdd),
             contentAlignment = Alignment.Center
-        ) { Text(text = "+", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black) }
+        ) { Text(text = "+", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black) }
     }
 }
 
@@ -571,7 +567,7 @@ private fun EventRow(
     dailyAvailable: Boolean,
     streak: Int,
     onDaily: () -> Unit,
-    onLeague: () -> Unit
+    onAchievements: () -> Unit
 ) {
     val c = joyThemeColors()
     Row(
@@ -588,11 +584,11 @@ private fun EventRow(
         )
         EventCard(
             icon = AppIcon.TROPHY,
-            title = "لیگ هفتگی",
-            subtitle = "جایزه هفته را بگیر",
+            title = "دستاوردها",
+            subtitle = "مدال‌هایت را ببین",
             accent = Color(0xFF7DE3FF),
             modifier = Modifier.weight(1f),
-            onClick = onLeague
+            onClick = onAchievements
         )
     }
 }
@@ -609,7 +605,7 @@ private fun EventCard(
     val c = joyThemeColors()
     Row(
         modifier = modifier
-            .height(42.dp)
+            .height(76.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(
                 Brush.linearGradient(
@@ -621,14 +617,14 @@ private fun EventCard(
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AppIconView(icon = icon, tint = accent, size = 20.dp)
+        AppIconView(icon = icon, tint = accent, size = 28.dp)
         Spacer(Modifier.width(8.dp))
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, color = c.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
-            Text(text = subtitle, color = accent, fontSize = 9.5.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center)
+            Text(text = title, color = c.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+            Text(text = subtitle, color = accent, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center)
         }
         Text(text = "›", color = c.textPrimary.copy(alpha = 0.8f), fontSize = 20.sp)
     }
@@ -667,11 +663,10 @@ private fun LogoBlock() {
             .graphicsLayer { translationY = offset.dp.toPx() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AppIconView(icon = AppIcon.CROWN, tint = GoldTop, size = 22.dp)
         Text(
             text = "BLOCK",
             style = TextStyle(
-                fontSize = 50.sp,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(c.textPrimary, c.emerald, c.emerald.copy(alpha = 0.75f))),
                 shadow = Shadow(color = Color(0xFF0B0620), offset = Offset(0f, 7f), blurRadius = 14f)
@@ -681,7 +676,7 @@ private fun LogoBlock() {
         Text(
             text = "BOOM",
             style = TextStyle(
-                fontSize = 42.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(GoldTop, Color(0xFFFFC02E), GoldBottom)),
                 shadow = Shadow(color = Color(0xFF4A1600), offset = Offset(0f, 8f), blurRadius = 16f)
@@ -692,7 +687,7 @@ private fun LogoBlock() {
         Text(
             text = "Shoot  •  Break  •  Win!",
             color = c.textSecondary,
-            fontSize = 9.5.sp,
+            fontSize = 10.5.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
             modifier = Modifier.offset(y = (-8).dp)
@@ -743,7 +738,7 @@ private fun PlayButton(onClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AppIconView(icon = AppIcon.PLAY, tint = Ink, size = 22.dp, strokeWidth = 2.4.dp)
+            AppIconView(icon = AppIcon.PLAY, tint = Ink, size = 26.dp, strokeWidth = 2.4.dp)
             Spacer(Modifier.width(12.dp))
             Text(
                 text = "بازی",
@@ -792,16 +787,16 @@ private fun QuickTile(
     Column(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .height(62.dp)
+            .height(70.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(listOf(c.surface, c.surfaceSoft)))
             .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(vertical = 5.dp),
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            AppIconView(icon = icon, tint = c.emerald, size = 18.dp)
+            AppIconView(icon = icon, tint = c.emerald, size = 20.dp)
             if (badge) {
                 Box(
                     modifier = Modifier
@@ -826,12 +821,9 @@ private fun QuickTile(
 
 @Composable
 private fun ModeGrid(onPick: (MenuMode) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         ModeCard(MenuMode.CLASSIC, Modifier.fillMaxWidth()) { onPick(it) }
-        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            ModeCard(MenuMode.INFINITY, Modifier.weight(1f)) { onPick(it) }
-            ModeCard(MenuMode.TIME_ATTACK, Modifier.weight(1f)) { onPick(it) }
-        }
+        ModeCard(MenuMode.INFINITY, Modifier.fillMaxWidth()) { onPick(it) }
     }
 }
 
@@ -845,7 +837,7 @@ private fun ModeCard(
     val scale = pressScale(interaction)
     Box(
         modifier = modifier
-            .height(72.dp)
+            .height(96.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
             .background(Brush.linearGradient(listOf(mode.top, mode.bottom)))
@@ -872,14 +864,14 @@ private fun ModeCard(
             AppIconView(
                 icon = mode.icon,
                 tint = Color.White,
-                size = if (mode == MenuMode.INFINITY) 28.dp else 24.dp,
+                size = if (mode == MenuMode.INFINITY) 34.dp else 30.dp,
                 strokeWidth = 2.2.dp
             )
             Spacer(Modifier.height(3.dp))
             Text(
                 text = mode.titleFa,
                 color = Color.White,
-                fontSize = 15.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
                 maxLines = 1
@@ -887,7 +879,7 @@ private fun ModeCard(
             Text(
                 text = mode.subtitleFa,
                 color = Color.White.copy(alpha = 0.85f),
-                fontSize = 9.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 2
@@ -905,7 +897,7 @@ private fun ModeCard(
 private fun BottomNavV2(
     onHome: () -> Unit,
     onStats: () -> Unit,
-    onAchievements: () -> Unit,
+    onLeaderboard: () -> Unit,
     onSocial: () -> Unit,
     onMore: () -> Unit
 ) {
@@ -928,7 +920,7 @@ private fun BottomNavV2(
         ) {
             NavItem(AppIcon.HOME, "خانه", active = true, onClick = onHome)
             NavItem(AppIcon.CHART, "آمار", onClick = onStats)
-            NavItem(AppIcon.TROPHY, "دستاورد", onClick = onAchievements, badge = true)
+            NavItem(AppIcon.TROPHY, "لیدربورد", onClick = onLeaderboard, badge = true)
             NavItem(AppIcon.USER, "اجتماعی", onClick = onSocial, badge = true)
             NavItem(AppIcon.MORE, "بیشتر", onClick = onMore)
         }
@@ -955,14 +947,14 @@ private fun NavItem(
                 } else Modifier
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
             AppIconView(
                 icon = icon,
                 tint = if (active) c.emerald else c.textSecondary,
-                size = 20.dp,
+                size = 24.dp,
                 strokeWidth = 1.9.dp
             )
             if (badge) {
@@ -980,7 +972,7 @@ private fun NavItem(
         Text(
             text = label,
             color = if (active) c.textPrimary else c.textSecondary,
-            fontSize = 10.5.sp,
+            fontSize = 11.5.sp,
             fontWeight = if (active) FontWeight.Black else FontWeight.Medium,
             maxLines = 1
         )

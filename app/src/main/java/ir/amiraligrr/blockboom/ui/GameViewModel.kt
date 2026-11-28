@@ -110,7 +110,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 GameEngine.BOSS_EVERY_N_LEVELS
             nextBoss.coerceIn(1, 9999)
         }
-        GameMode.RECORD, GameMode.TIME_ATTACK -> 1
+        GameMode.RECORD -> 1
     }
 
     /** Starts the selected mode. HomeScreen already consumed a life. */

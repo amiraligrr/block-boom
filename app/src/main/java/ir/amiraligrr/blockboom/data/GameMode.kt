@@ -19,14 +19,11 @@ enum class GameMode {
     RECORD,
 
     /** Standalone boss ladder: starts at the next boss level, no campaign checkpoint. */
-    BOSS,
-
-    /** Sixty-second score chase: the board keeps refilling until the clock runs out. */
-    TIME_ATTACK;
+    BOSS;
 
     /** True for the modes that are one attempt and cannot spend a second heart. */
     val isOneAttempt: Boolean
-        get() = this == RECORD || this == BOSS || this == TIME_ATTACK
+        get() = this == RECORD || this == BOSS
 
     /** True when the mode must not write the campaign checkpoint or its chests. */
     val isSideMode: Boolean

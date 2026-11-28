@@ -113,7 +113,6 @@ fun GameOverScreen(
     val modeLabel = when (engine.mode) {
         GameMode.RECORD -> "حالت رکوردی"
         GameMode.BOSS -> "نبرد باس"
-        GameMode.TIME_ATTACK -> "حمله زمانی"
         GameMode.STAGE -> "حالت مرحله‌ای"
     }
     val runScore = engine.runScore
@@ -218,8 +217,8 @@ fun GameOverScreen(
 
             Text(
                 text = when (engine.mode) {
-                    GameMode.TIME_ATTACK -> "زمان تمام شد!"
                     GameMode.BOSS -> "نبرد تمام شد"
+                    GameMode.RECORD -> "پایان بی‌نهایت"
                     else -> stringResource(R.string.game_over)
                 },
                 style = MaterialTheme.typography.headlineMedium,
@@ -231,8 +230,11 @@ fun GameOverScreen(
 
             Text(
                 text = if (isRecord) {
-                    if (saveManager.recordBestLevel > 0) {
-                        stringResource(R.string.record_best_level, saveManager.recordBestLevel)
+                    if (saveManager.recordBestScore > 0) {
+                        stringResource(
+                            R.string.record_best_score,
+                            formatNumber(saveManager.recordBestScore.toLong())
+                        )
                     } else {
                         stringResource(R.string.record_no_best)
                     }

@@ -75,7 +75,6 @@ import ir.amiraligrr.blockboom.ui.components.ButtonSize
 import ir.amiraligrr.blockboom.ui.components.NeonButton
 import ir.amiraligrr.blockboom.ui.components.PowerUpScreenOverlay
 import ir.amiraligrr.blockboom.ui.components.PowerUpTimer
-import ir.amiraligrr.blockboom.ui.v2.GameHudV2
 import ir.amiraligrr.blockboom.ui.theme.DarkSurfaceVariant
 import ir.amiraligrr.blockboom.ui.theme.DeepSpace
 import ir.amiraligrr.blockboom.ui.theme.NeonCyan
@@ -361,7 +360,6 @@ fun GameScreen(
     }
 
     val isRecordRun = engine.mode == GameMode.RECORD
-    val isTimeAttack = engine.mode == GameMode.TIME_ATTACK
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -376,19 +374,17 @@ fun GameScreen(
             hearts = livesManager.lives,
             coins = initialCoins + engine.coinsInLevel,
             level = if (isRecordRun) null else engine.level,
-            score = if (isRecordRun || isTimeAttack) engine.runScore else null,
+            score = if (isRecordRun) engine.runScore else null,
             isPremium = ProgressState.isPremium.value
         )
 
-        LevelProgressBar(
-            destroyed = engine.blocksDestroyed,
-            total = engine.totalBlocksInLevel,
-            level = engine.level,
-            recordMode = isRecordRun
-        )
-
-        if (isTimeAttack) {
-            TimeAttackBar(remaining = engine.timeAttackRemaining)
+        if (!isRecordRun) {
+            LevelProgressBar(
+                destroyed = engine.blocksDestroyed,
+                total = engine.totalBlocksInLevel,
+                level = engine.level,
+                recordMode = false
+            )
         }
 
         if (isRecordRun && engine.recordBaseline > 0) {
@@ -852,68 +848,6 @@ private fun PauseOverlay(
  * actually chasing. It stays pinned to the record that existed when the run
  * started, not the record the run is currently setting.
  */
-/**
- * The sixty-second clock.
- *
- * It is a full-width strip rather than another chip in the corner: in Time
- * Attack the clock is the objective, so it has to be readable at a glance
- * while the player is tracking falling blocks.
- */
-@Composable
-private fun TimeAttackBar(remaining: Float) {
-    val total = ir.amiraligrr.blockboom.domain.GameEngine.TIME_ATTACK_SECONDS
-    val fraction = (remaining / total).coerceIn(0f, 1f)
-    val seconds = kotlin.math.ceil(remaining).toInt().coerceAtLeast(0)
-    val urgent = remaining <= 10f
-    val accent = if (urgent) ir.amiraligrr.blockboom.ui.theme.NeonRed
-    else ir.amiraligrr.blockboom.ui.theme.NeonCyan
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "⏱ حمله زمانی",
-                color = accent,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black
-            )
-            Text(
-                text = "٠٠:%02d".format(seconds),
-                color = accent,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Black
-            )
-        }
-        Spacer(Modifier.height(3.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp)
-                .clip(RoundedCornerShape(50))
-                .background(Color.Black.copy(alpha = 0.35f))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(accent, if (urgent) NeonGold else NeonGreen)
-                        )
-                    )
-            )
-        }
-    }
-}
-
 @Composable
 private fun RecordChaseBar(runScore: Int, baseline: Int) {
     val c = joyThemeColors()

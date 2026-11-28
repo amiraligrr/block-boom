@@ -431,16 +431,6 @@ class GameEngine(
     var runScore = 0
 
     /**
-     * Seconds left in a Time Attack run, or 0 in every other mode.
-     *
-     * Snapshot state because the HUD reads it every frame. The clock is driven
-     * by the same `dt` as the simulation, so pausing or the ad overlay does not
-     * consume the player's sixty seconds.
-     */
-    var timeAttackRemaining by mutableFloatStateOf(0f)
-        private set
-
-    /**
      * The record this attempt is chasing, captured when the run starts.
      *
      * The save's recordBestScore moves as the run beats itself, so reading it
@@ -561,7 +551,6 @@ class GameEngine(
         runScore = 0
         recordBaseline = if (runMode == GameMode.RECORD) saveManager.recordBestScore else 0
         runSecondsTotal = 0f
-        timeAttackRemaining = if (runMode == GameMode.TIME_ATTACK) TIME_ATTACK_SECONDS else 0f
     }
 
     /**
@@ -1258,7 +1247,13 @@ class GameEngine(
         // well above the point where blocks arrive faster than the cannon can
         // service them (which reads as unfair rather than hard), but low enough
         // that a late level has a visibly tighter rhythm than a mid one.
-        val spawnInterval = (1.2f - extra * 0.022f).coerceIn(MIN_SPAWN_INTERVAL, 1.2f)
+        val baseSpawnInterval = (1.2f - extra * 0.022f).coerceIn(MIN_SPAWN_INTERVAL, 1.2f)
+        val spawnInterval = if (mode == GameMode.RECORD) {
+            (baseSpawnInterval / (1f + (runSecondsTotal / 90f).coerceAtMost(2.5f) * 0.10f))
+                .coerceAtLeast(MIN_SPAWN_INTERVAL * 0.82f)
+        } else {
+            baseSpawnInterval
+        }
 
 // ── HP, and why it is capped in *balls to kill* rather than in HP ──
         //
@@ -1281,7 +1276,18 @@ class GameEngine(
         // says "around level 140". The largest deviation anywhere in the game is
         // 0.05 on a multiplier that spans 1.0 to 2.3.
         val perLevel = 1f + extra * 0.0085f + tier * TIER_HP_STEP
-        val hpMultiplier = perLevel.coerceAtMost(HP_MULTIPLIER_CEILING)
+        // Ranked/Infinity must not spend its first minute being trivial for a
+        // maxed cannon. The opening pressure follows the *build*, and a slow
+        // time ramp keeps the board getting meaner even if the player clears
+        // quickly. Both are capped so the run stays playable.
+        val recordBuildBoost = if (mode == GameMode.RECORD) {
+            1f + (0.22f * ln(buildPowerIndex.coerceAtLeast(1f))).coerceAtMost(1.20f)
+        } else 1f
+        val recordTimeBoost = if (mode == GameMode.RECORD) {
+            1f + (runSecondsTotal / 60f).coerceAtMost(3f) * 0.15f
+        } else 1f
+        val hpMultiplier = (perLevel * recordBuildBoost * recordTimeBoost)
+            .coerceAtMost(HP_MULTIPLIER_CEILING * 1.8f)
 
         // The old ramp was a piecewise-linear function with no ceiling, while
         // `cannon.damage` is literally the DAMAGE upgrade level and that upgrade
@@ -1412,9 +1418,6 @@ class GameEngine(
      * fight stopped being an event and became the texture of the game.
      */
     companion object {
-        /** Length of one Time Attack run, in seconds. */
-        const val TIME_ATTACK_SECONDS = 60f
-
         const val BOSS_EVERY_N_LEVELS = 10
 
         /**
@@ -1537,31 +1540,6 @@ private fun randomBlockShape(): BlockShape {
         gameElapsed += dt
         runSecondsTotal += dt
         if (hitGrace > 0f) hitGrace = (hitGrace - dt).coerceAtLeast(0f)
-
-        if (mode == GameMode.TIME_ATTACK) {
-            timeAttackRemaining = (timeAttackRemaining - dt).coerceAtLeast(0f)
-            if (timeAttackRemaining <= 0f) {
-                flushCoins()
-                flushMissionProgress()
-                Telemetry.track(
-                    "run_end",
-                    level = level,
-                    value = score,
-                    durationMs = levelElapsedMs(),
-                    meta = "outcome=time,blocks=$blocksDestroyed,coins=$coinsInLevel,combo=${combo.best}"
-                )
-                Telemetry.flush()
-                status = GameStatus.GameOver
-                return
-            }
-        }
-
-        // Frame one of a boss level: the fight starts now, not after the spawn
-        // delay an ordinary level's first block waits out.
-        if (motherPendingSpawn && fieldWidth > 0f) {
-            motherPendingSpawn = false
-            spawnMother()
-        }
 
         updateCannon(dt)
         updateSpawning(dt)
@@ -2702,19 +2680,6 @@ private fun updateBlocks(dt: Float) {
         shake = max(shake, 0.55f)
         combo.reset()
 
-        if (mode == GameMode.TIME_ATTACK) {
-            onSound?.invoke(SoundEvent.BLOCK_DESTROY)
-            mother.vx = randomFloat(-dp(46f), dp(46f))
-            pushPopup {
-                x = fieldWidth * 0.5f
-                y = fieldHeight * 0.55f
-                text = "💥 کمبو از دست رفت"
-                color = NeonGold
-                life = 0.7f
-            }
-            return
-        }
-
         if (coachProtection) {
             mother.vx = randomFloat(-dp(46f), dp(46f))
             onSound?.invoke(SoundEvent.BLOCK_DESTROY)
@@ -2827,20 +2792,6 @@ private fun updateBlocks(dt: Float) {
         combo.reset()
 
         Log.d("BlockBoomCoach", "cannon hit: protection=$coachProtection status=$status")
-        if (mode == GameMode.TIME_ATTACK) {
-            // The clock is the only lose condition in Time Attack. A hit still
-            // costs the player their combo and the block, but not a heart and
-            // not the run — the sixty seconds are the whole challenge.
-            onSound?.invoke(SoundEvent.BLOCK_DESTROY)
-            pushPopup {
-                x = fieldWidth * 0.5f
-                y = fieldHeight * 0.55f
-                text = "💥 کمبو از دست رفت"
-                color = NeonGold
-                life = 0.7f
-            }
-            return
-        }
         if (coachProtection) {
             onSound?.invoke(SoundEvent.BLOCK_DESTROY)
             pushPopup {
@@ -3822,11 +3773,36 @@ private fun spawnPowerUpDrop(bonus: BonusBlock) {
             // Time Attack has no win screen: the board refilling is the game.
             // Bank the wave's coins and roll straight into the next one while
             // the same sixty-second clock keeps running.
-            if (mode == GameMode.TIME_ATTACK) {
+            // Infinite mode has no wave screen and no wave number. A cleared
+            // board flows straight into the next, harder one; the run ends on
+            // the player's last heart, not on a "wave complete" card.
+            if (mode == GameMode.RECORD) {
                 collectAllRemainingCoins()
                 flushCoins()
                 flushMissionProgress()
+                saveManager.updateRecord(level, runScore)
                 runLevelsCleared++
+                saveManager.claimRecordMilestoneIfDue(level)?.let {
+                    lastMilestoneLevel = it.level
+                    lastMilestoneReward = it.coins.toInt()
+                }
+                if (!tookDamageThisLevel && !coachProtection) {
+                    val bonus = perfectClearBonus(level)
+                    if (bonus > 0) {
+                        saveManager.addCoins(bonus.toLong())
+                        lastPerfectBonus = bonus
+                    }
+                }
+                Telemetry.addLevelComplete()
+                Telemetry.track(
+                    "level_complete",
+                    level = level,
+                    value = score,
+                    durationMs = levelElapsedMs(),
+                    meta = "blocks=${totalBlocksInLevel}"
+                )
+                Telemetry.flush()
+                onSound?.invoke(SoundEvent.LEVEL_COMPLETE)
                 startLevel(level + 1)
                 return
             }
