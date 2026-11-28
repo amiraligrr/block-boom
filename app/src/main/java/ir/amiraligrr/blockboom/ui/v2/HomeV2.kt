@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import ir.amiraligrr.blockboom.R
 import ir.amiraligrr.blockboom.data.GameMode
 import ir.amiraligrr.blockboom.data.LivesManager
+import ir.amiraligrr.blockboom.data.RewardService
 import ir.amiraligrr.blockboom.data.SaveManager
 import ir.amiraligrr.blockboom.ui.dialogs.NoLivesDialog
 import ir.amiraligrr.blockboom.ui.screens.DailyRewardDialog
@@ -128,6 +129,8 @@ fun HomeV2(
     onMore: () -> Unit,
     onDailyReward: () -> Unit,
     onExit: () -> Unit,
+    news: RewardService.Announcement? = null,
+    onNews: () -> Unit = {},
 ) {
     var showNoLives by remember { mutableStateOf(false) }
     var showDaily by remember { mutableStateOf(saveManager.isDailyRewardAvailable()) }
@@ -269,6 +272,9 @@ fun HomeV2(
                 }
             }
             }
+
+            NewsCard(news = news, onNews = onNews)
+            Spacer(Modifier.height(6.dp))
 
             BottomNavV2(
                 onHome = { },
@@ -666,7 +672,7 @@ private fun LogoBlock() {
         Text(
             text = "BLOCK",
             style = TextStyle(
-                fontSize = 42.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(c.textPrimary, c.emerald, c.emerald.copy(alpha = 0.75f))),
                 shadow = Shadow(color = Color(0xFF0B0620), offset = Offset(0f, 7f), blurRadius = 14f)
@@ -676,7 +682,7 @@ private fun LogoBlock() {
         Text(
             text = "BOOM",
             style = TextStyle(
-                fontSize = 36.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Black,
                 brush = Brush.verticalGradient(listOf(GoldTop, Color(0xFFFFC02E), GoldBottom)),
                 shadow = Shadow(color = Color(0xFF4A1600), offset = Offset(0f, 8f), blurRadius = 16f)
@@ -687,7 +693,7 @@ private fun LogoBlock() {
         Text(
             text = "Shoot  •  Break  •  Win!",
             color = c.textSecondary,
-            fontSize = 10.5.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
             modifier = Modifier.offset(y = (-8).dp)
@@ -787,16 +793,16 @@ private fun QuickTile(
     Column(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .height(70.dp)
+            .height(86.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(listOf(c.surface, c.surfaceSoft)))
             .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            AppIconView(icon = icon, tint = c.emerald, size = 20.dp)
+            AppIconView(icon = icon, tint = c.emerald, size = 26.dp)
             if (badge) {
                 Box(
                     modifier = Modifier
@@ -812,9 +818,10 @@ private fun QuickTile(
         Text(
             text = label,
             color = c.textPrimary,
-            fontSize = 9.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            maxLines = 1
+            maxLines = 1,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -837,7 +844,7 @@ private fun ModeCard(
     val scale = pressScale(interaction)
     Box(
         modifier = modifier
-            .height(96.dp)
+            .height(84.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
             .background(Brush.linearGradient(listOf(mode.top, mode.bottom)))
@@ -876,18 +883,52 @@ private fun ModeCard(
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )
-            Text(
-                text = mode.subtitleFa,
-                color = Color.White.copy(alpha = 0.85f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                maxLines = 2
-            )
         }
     }
 }
 
+
+@Composable
+private fun NewsCard(
+    news: RewardService.Announcement?,
+    onNews: () -> Unit,
+) {
+    val c = joyThemeColors()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(c.surface)
+            .border(1.dp, c.cardBorder.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
+            .clickable(enabled = news != null, onClick = onNews)
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppIconView(icon = AppIcon.BELL, tint = c.emerald, size = 24.dp, strokeWidth = 2.dp)
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = "اخبار بازی",
+                color = c.textPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                maxLines = 1,
+            )
+            Text(
+                text = news?.title?.takeIf { it.isNotBlank() }
+                    ?: "برای لیدربورد، حالت بی‌نهایت را بازی کن",
+                color = c.textSecondary,
+                fontSize = 9.5.sp,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+        }
+        if (news != null) {
+            Text(text = "‹", color = c.textPrimary, fontSize = 18.sp)
+        }
+    }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Bottom navigation

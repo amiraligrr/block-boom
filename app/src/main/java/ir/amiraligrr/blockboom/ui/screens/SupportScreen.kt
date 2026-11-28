@@ -592,15 +592,13 @@ private fun ChatBubble(
                 )
                 .padding(horizontal = 12.dp, vertical = 9.dp)
         ) {
-            if (!mine) {
-                Text(
-                    text = "🛡️ " + stringResource(R.string.support_admin),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    color = NeonCyan
-                )
-                Spacer(Modifier.height(2.dp))
-            }
+            Text(
+                text = if (mine) "شما" else "🛡️ " + stringResource(R.string.support_admin),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                color = if (mine) Color.White.copy(alpha = 0.82f) else NeonCyan
+            )
+            Spacer(Modifier.height(2.dp))
             Text(
                 text = msg.body,
                 style = MaterialTheme.typography.bodyMedium.copy(

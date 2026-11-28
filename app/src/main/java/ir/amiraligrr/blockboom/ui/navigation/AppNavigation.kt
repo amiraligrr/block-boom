@@ -114,10 +114,15 @@ fun AppNavigation() {
     var currentAnnouncement by remember {
         mutableStateOf<RewardService.Announcement?>(null)
     }
+    var latestNews by remember {
+        mutableStateOf<RewardService.Announcement?>(null)
+    }
     val incomingAnnouncements by app.announcements.collectAsState()
     LaunchedEffect(incomingAnnouncements) {
         if (incomingAnnouncements.isNotEmpty()) {
-            announcementQueue = announcementQueue + app.consumeAnnouncements()
+            val consumed = app.consumeAnnouncements()
+            latestNews = consumed.firstOrNull() ?: latestNews
+            announcementQueue = announcementQueue + consumed
         }
     }
     LaunchedEffect(announcementQueue, currentAnnouncement) {
@@ -448,7 +453,9 @@ fun AppNavigation() {
                     }
                 },
                 onDailyReward = { },
-                onExit = { activity?.finish() }
+                onExit = { activity?.finish() },
+                news = latestNews,
+                onNews = { latestNews?.let { currentAnnouncement = it } }
             )
         }
         composable(Screen.Game.route) {

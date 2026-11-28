@@ -99,6 +99,22 @@ object TicketManager {
             put("action", action)
         }
 
+    /**
+     * The API has returned `from_admin` as both a JSON boolean and 0/1.
+     * `optBoolean` only understands booleans/strings, so an integer 1 was
+     * silently read as "player" and every admin reply rendered as the user's
+     * own bubble. Accept all three encodings.
+     */
+    private fun parseBool(value: Any?): Boolean = when (value) {
+        null -> false
+        is Boolean -> value
+        is Number -> value.toInt() != 0
+        is String -> value.equals("1", true) ||
+            value.equals("true", true) ||
+            value.equals("yes", true)
+        else -> false
+    }
+
     private fun parseTicket(o: JSONObject): Ticket = Ticket(
         id = o.optInt("id"),
         subject = o.optString("subject", "—"),
@@ -159,7 +175,7 @@ object TicketManager {
                     msgs.add(
                         TicketMessage(
                             id = m.optInt("id"),
-                            fromAdmin = m.optBoolean("from_admin", false),
+                            fromAdmin = parseBool(m.opt("from_admin")),
                             body = m.optString("body", ""),
                             createdAt = m.optString("created_at", "")
                         )
