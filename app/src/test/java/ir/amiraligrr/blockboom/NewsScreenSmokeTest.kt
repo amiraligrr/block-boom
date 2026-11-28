@@ -6,7 +6,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
 import ir.amiraligrr.blockboom.data.NewsItem
 import androidx.compose.ui.unit.LayoutDirection
 import ir.amiraligrr.blockboom.ui.theme.BlockBoomTheme
@@ -91,6 +96,23 @@ class NewsScreenSmokeTest {
         render(dark = true)
         compose.onNodeWithText(sample[0].title).assertExists()
         capture("news-dark")
+    }
+
+    @Test
+    fun swipingMovesBetweenNewsItems() {
+        render(dark = false)
+        compose.onNodeWithText(sample[0].title).assertExists()
+        compose.onNodeWithTag("newsPager").performTouchInput { swipeLeft() }
+        compose.waitForIdle()
+        // RTL pagers can map a physical left swipe to either direction; try
+        // the other way only if the first one did not advance.
+        val moved = compose.onAllNodesWithText(sample[1].title)
+            .fetchSemanticsNodes().isNotEmpty()
+        if (!moved) {
+            compose.onNodeWithTag("newsPager").performTouchInput { swipeRight() }
+            compose.waitForIdle()
+        }
+        compose.onNodeWithText(sample[1].title).assertExists()
     }
 
     @Test

@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -114,6 +115,7 @@ fun NewsScreen(news: List<NewsItem>, onBack: () -> Unit) {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .testTag("newsPager")
         ) { page ->
             val item = news[page]
             Column(

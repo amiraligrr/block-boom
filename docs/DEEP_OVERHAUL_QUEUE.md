@@ -77,4 +77,4 @@ It is complete when:
   build generated. Deep Overhaul not started yet.
 - 2026-11-28: Phase 12 basic news loop shipped (published-only API, admin
   create/edit/publish/delete, swipe reader, Home card). Migration written but
-  not executed. Home rebuilt as one scaled composition; 90/90 tests pass.
+  not executed. Home rebuilt as one scaled composition; 91/91 tests pass.

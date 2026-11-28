@@ -145,7 +145,7 @@
   - Light/dark smoke tests now pin the same RTL layout direction the app uses.
 - Online gate: added an explicit “ادامه با اطلاعات محلی” path; sync and the
   leaderboard stay unavailable until the domestic API answers.
-- Full suite: 90/90 PASS. Release APK rebuilt and installed on the Xiaomi
+- Full suite: 91/91 PASS. Release APK rebuilt and installed on the Xiaomi
   test device; final Home verified with a live top banner.
 - Not verified on-device: Infinity run, support thread with a real admin
   reply, News reader via UI (touch injection is blocked by MIUI). Their
